@@ -1228,17 +1228,19 @@
         <button class="nav-tab" data-view="standings" id="tab-standings"></button>
         <button class="nav-tab" data-view="detail" id="detail-tab" style="display:none"></button>
         <div id="admin-tabs"
-          style="display:none;gap:2px;border-inline-start:1px solid var(--border);padding-inline-start:10px;margin-inline-start:10px">
-          <a href="match-setup.html" class="nav-tab" style="text-decoration:none">إعداد مباراة</a>
-          <a href="referee-login.html" class="nav-tab" style="text-decoration:none">تطبيق الحكم</a>
-          <a href="admin-db-manager.html" class="nav-tab" style="text-decoration:none">مدير البيانات</a>
+          style="display:none;gap:4px;border-inline-start:1px solid var(--border);padding-inline-start:10px;margin-inline-start:10px">
+          <a href="match-setup.html" class="nav-tab" style="text-decoration:none">Setup</a>
+          <a href="referee-login.html" class="nav-tab" style="text-decoration:none">Referee</a>
+          <a href="admin-db-manager.html" class="nav-tab" style="text-decoration:none">Admin</a>
+          <button class="nav-tab" onclick="logout()" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:11px">Logout</button>
         </div>
         <button class="nav-tab" data-view="dashboard" id="tab-dashboard"></button>
       </div>
       <div id="nav-actions" style="display:flex;align-items:center;gap:12px;margin-inline-start:12px">
         <!-- Admin/Referee Entry -->
-        <div id="login-entry">
-          <a href="admin-login.html" class="nav-tab" style="text-decoration:none; background:rgba(255,255,255,0.05); font-size:12px; border:1px solid var(--glass-border)">Login</a>
+        <div id="login-entry" style="display:flex; gap:6px">
+          <a href="referee-login.html" class="nav-tab" style="text-decoration:none; background:rgba(255,255,255,0.05); font-size:11px; border:1px solid var(--glass-border); padding:0 10px">Referee Login</a>
+          <a href="admin-login.html" class="nav-tab" style="text-decoration:none; background:rgba(255,255,255,0.05); font-size:11px; border:1px solid var(--glass-border); padding:0 10px">Admin Login</a>
         </div>
         <button id="lang-toggle" class="nav-tab" style="background:var(--surface2); border:1px solid var(--border); font-size:12px; height:32px; padding:0 12px" onclick="toggleLang()"></button>
         <span id="conn-badge" class="conn-badge off"></span>
@@ -1248,8 +1250,7 @@
     <script>
       function logout() {
         sessionStorage.clear();
-        localStorage.removeItem('xura_admin');
-        localStorage.removeItem('xura_referee');
+        localStorage.clear();
         window.location.reload();
       }
     </script>
