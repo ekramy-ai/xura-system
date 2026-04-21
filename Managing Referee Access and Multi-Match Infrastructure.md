@@ -1273,3 +1273,77 @@ Continue
 *   إذا حدث انقطاع في الإنترنت أثناء المباراة، بمجرد عودته يقوم التطبيق بمزامنة البيانات "المعلقة" مع قاعدة البيانات فوراً.
 
 أنت الآن تملك نظاماً احترافياً يعتمد على **Single Source of Truth** (مصدر واحد للحقيقة) وهو قاعدة بياناتك في Firebase. 🏐📊_
+
+
+### User Input
+
+الأدمن يختار الحكم بس ميدخلش مكانه يعمل النتيجه ويكون لديه تسجيل خروج ايضا
+
+*Viewed [admin-db-manager.html](file:///c:/Users/Lenovo/Desktop/XURAAA/admin-db-manager.html) *
+
+*Edited relevant file*
+
+*Edited relevant file*
+
+*Viewed [admin-db-manager.html](file:///c:/Users/Lenovo/Desktop/XURAAA/admin-db-manager.html) *
+
+*Viewed [admin-db-manager.html](file:///c:/Users/Lenovo/Desktop/XURAAA/admin-db-manager.html) *
+
+*Viewed [admin-db-manager.html](file:///c:/Users/Lenovo/Desktop/XURAAA/admin-db-manager.html) *
+
+*Viewed [admin-db-manager.html](file:///c:/Users/Lenovo/Desktop/XURAAA/admin-db-manager.html) *
+
+*Edited relevant file*
+
+*User accepted the command `git add .; git commit -m "UI: Enforced role-based access and added logout to DB Manager"; git push origin main`*
+
+*Checked command status*
+
+### Planner Response
+
+لقد قمت بتطبيق نظام الصلاحيات (Role-based Access) وتوفير خيارات الخروج لضمان أمان النظام:
+
+### **التحديثات الجديدة:**
+
+1.  **فصل الصلاحيات (Role Enforcement):**
+    *   **الأدمن (Admin):** عندما يدخل الأدمن، ستظهر له فقط تبويبات **Setup** (إعداد المباراة) و **Admin** (مدير البيانات). **تم إخفاء خيار الدخول كمباراة حكم** من أمامه، وبالتالي لا يمكنه تسجيل النقاط بنفسه، بل يكتفي بالجانب الإداري.
+    *   **الحكم (Referee):** عندما يدخل الحكم، سيظهر له فقط تبويب **Referee** (تطبيق الحكم) للدخول لمباراته، ولن يرى خيارات الإعداد أو إدارة البيانات.
+
+2.  **تسجيل الخروج (Logout):**
+    *   تمت إضافة زر **تسجيل خروج (Logout)** واضح باللون الأحمر في أعلى صفحة **مدير قاعدة البيانات (DB Manager)**.
+    *   بمجرد الضغط عليه، سيتم مسح جلسة الأدمن وإعادته فوراً للوحة النتائج العامة كمشاهد عادي.
+
+3.  **الأمان:**
+    *   النظام الآن "يتذكر" دورك؛ فإذا حاولت فتح رابط الحكم وأنت أدمن (أو العكس)، فلن تظهر لك الأدوات الخاصة بهذا الدور في الشريط العلوي.
+
+**يمكنك الآن تجربة الدخول كأدمن، وستلاحظ أن خيار تطبيق الحكم لم يعد متاحاً لك، مما يضمن تفرغك للإدارة فقط.**
+
+هل هناك أي ميزة أخرى تود إضافتها؟_
+
+
+### User Input
+
+عايز زر الدخول login يبقى واحد ولما ادوس عليه اختار حكم ولا ادمن وبعدها الباسورد
+
+*Edited relevant file*
+
+*Edited relevant file*
+
+*User accepted the command `git add .; git commit -m "UI: Unified login portal with role selection"; git push origin main`*
+
+*Checked command status*
+
+### Planner Response
+
+فكرة رائعة! لقد قمت بتوحيد نظام الدخول ليصبح أكثر أناقة واحترافية:
+
+### **التغييرات الجديدة:**
+
+1.  **زر دخول واحد:** ستجد الآن في أعلى الصفحة الرئيسية زراً واحداً فقط يسمى **"Login / دخول"**.
+2.  **بوابة الاختيار (Login Portal):** عند الضغط عليه، ستفتح لك صفحة جديدة مصممة بشكل "Premium" تعطيك خيارين:
+    *   **دخول الحكم:** سينقلك لصفحة اختيار اسم الحكم وإدخال الـ PIN.
+    *   **دخول المسؤول:** سينقلك مباشرة لصفحة الرمز السري للأدمن.
+3.  **الاحتفاظ بالصلاحيات:** بعد اختيار النوع وإدخال الرمز السري، سيعود بك النظام للصفحة الرئيسية مع إظهار التبويبات المناسبة فقط لدورك (كما طلبنا سابقاً).
+4.  **تسجيل الخروج:** ميزة الخروج موجودة دائماً لتعيدك لحالة المشاهد العادي وتظهر لك زر الـ Login الموحد مرة أخرى.
+
+بهذا التعديل، أصبح الموقع يبدو كمنصة متكاملة واحترافية جداً. جربها الآن على الرابط الخاص بك!_

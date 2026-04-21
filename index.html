@@ -1072,31 +1072,88 @@
 
     /* ── Responsive & Device Optimization ────────────────────── */
     @media (min-width: 1024px) {
-      .grid-2 { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px; }
-      #dash-cols { display: grid; grid-template-columns: 1fr 340px !important; gap: 24px; align-items: start; }
-      .detail-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+      .grid-2 {
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 24px;
+      }
+
+      #dash-cols {
+        display: grid;
+        grid-template-columns: 1fr 340px !important;
+        gap: 24px;
+        align-items: start;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 24px;
+        align-items: start;
+      }
     }
 
     @media (max-width: 768px) {
-      .nav-tabs { overflow-x: auto; justify-content: flex-start; padding-bottom: 4px; scrollbar-width: none; }
-      .nav-tabs::-webkit-scrollbar { display: none; }
-      .nav-tab { white-space: nowrap; flex-shrink: 0; }
-      .dh-score { font-size: 64px; }
-      .mc-score { font-size: 36px; }
+      .nav-tabs {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+      }
+
+      .nav-tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .nav-tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .dh-score {
+        font-size: 64px;
+      }
+
+      .mc-score {
+        font-size: 36px;
+      }
     }
 
     @media (max-width: 480px) {
-      #main { padding: 12px 10px; }
-      .card { padding: 16px; }
-      .nav-logo { font-size: 16px; }
-      .status-tag { font-size: 10px; padding: 2px 8px; }
+      #main {
+        padding: 12px 10px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      .nav-logo {
+        font-size: 16px;
+      }
+
+      .status-tag {
+        font-size: 10px;
+        padding: 2px 8px;
+      }
     }
 
     /* Print styles */
     @media print {
-      #topnav, .nav-tabs, #admin-tabs { display: none !important; }
-      #main { padding: 0; }
-      .card { border: 1px solid #000; break-inside: avoid; }
+
+      #topnav,
+      .nav-tabs,
+      #admin-tabs {
+        display: none !important;
+      }
+
+      #main {
+        padding: 0;
+      }
+
+      .card {
+        border: 1px solid #000;
+        break-inside: avoid;
+      }
     }
 
     /* Premium Responsive Enhancements */
@@ -1116,22 +1173,45 @@
       position: fixed;
       width: 100vw;
       height: 100vh;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       z-index: -1;
       overflow: hidden;
       pointer-events: none;
     }
+
     .orb {
       position: absolute;
-      width: 600px; height: 600px;
+      width: 600px;
+      height: 600px;
       border-radius: 50%;
       filter: blur(100px);
       opacity: 0.15;
       animation: move 20s infinite alternate;
     }
-    .orb-1 { background: var(--teal); top: -200px; right: -100px; }
-    .orb-2 { background: var(--blue); bottom: -100px; left: -100px; animation-delay: -5s; }
-    @keyframes move { from { transform: translate(0,0); } to { transform: translate(100px, 100px); } }
+
+    .orb-1 {
+      background: var(--teal);
+      top: -200px;
+      right: -100px;
+    }
+
+    .orb-2 {
+      background: var(--blue);
+      bottom: -100px;
+      left: -100px;
+      animation-delay: -5s;
+    }
+
+    @keyframes move {
+      from {
+        transform: translate(0, 0);
+      }
+
+      to {
+        transform: translate(100px, 100px);
+      }
+    }
 
     #topnav {
       backdrop-filter: blur(20px);
@@ -1142,7 +1222,10 @@
       height: 72px;
     }
 
-    .nav-tabs { gap: 8px; }
+    .nav-tabs {
+      gap: 8px;
+    }
+
     .nav-tab {
       height: 40px;
       padding: 0 16px;
@@ -1151,26 +1234,56 @@
       letter-spacing: 0.5px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .nav-tab.active { background: var(--teal-dark); color: var(--teal); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2); }
-    .nav-tab:hover:not(.active) { background: rgba(255,255,255,0.05); }
 
-    .card, .match-card, .point-log {
+    .nav-tab.active {
+      background: var(--teal-dark);
+      color: var(--teal);
+      box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2);
+    }
+
+    .nav-tab:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .card,
+    .match-card,
+    .point-log {
       background: var(--glass);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
-    .match-card:hover { border-color: var(--teal); transform: translateY(-4px) scale(1.01); }
+    .match-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-4px) scale(1.01);
+    }
 
     /* Admin Tabs Styling */
-    #admin-tabs { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 4px; border: 1px solid var(--glass-border); }
-    #admin-tabs a { font-size: 13px; opacity: 0.8; }
-    #admin-tabs a:hover { opacity: 1; color: var(--teal); }
+    #admin-tabs {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 4px;
+      border: 1px solid var(--glass-border);
+    }
+
+    #admin-tabs a {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    #admin-tabs a:hover {
+      opacity: 1;
+      color: var(--teal);
+    }
 
     /* Responsive Grid */
-    @media (min-width: 1400px) { .grid-2 { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1400px) {
+      .grid-2 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
   </style>
 
   <script type="module">
@@ -1218,11 +1331,13 @@
     <!-- Nav -->
     <nav id="topnav">
       <div class="nav-right">
-        <div class="nav-logo" style="font-weight:900; letter-spacing:2px; font-size:22px; background: linear-gradient(135deg, #fff, var(--text2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent">XURA</div>
+        <div class="nav-logo"
+          style="font-weight:900; letter-spacing:2px; font-size:22px; background: linear-gradient(135deg, #fff, var(--text2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent">
+          XURA</div>
         <div class="live-dot" style="margin-inline-start:12px"></div>
         <span class="live-badge" id="nav-live-label" style="font-size:10px; letter-spacing:1px">LIVE</span>
       </div>
-      
+
       <div class="nav-tabs" style="flex:1; justify-content: center">
         <button class="nav-tab active" data-view="home" id="tab-home"></button>
         <button class="nav-tab" data-view="standings" id="tab-standings"></button>
@@ -1232,16 +1347,21 @@
           <a href="match-setup.html" class="nav-tab" style="text-decoration:none">Setup</a>
           <a href="referee-login.html" class="nav-tab" style="text-decoration:none">Referee</a>
           <a href="admin-db-manager.html" class="nav-tab" style="text-decoration:none">Admin</a>
-          <button class="nav-tab" onclick="logout()" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:11px">Logout</button>
+          <button class="nav-tab" onclick="logout()"
+            style="background:none; border:none; color:var(--red); cursor:pointer; font-size:11px">Logout</button>
         </div>
         <button class="nav-tab" data-view="dashboard" id="tab-dashboard"></button>
       </div>
       <div id="nav-actions" style="display:flex;align-items:center;gap:12px;margin-inline-start:12px">
         <!-- Unified Login Entry -->
         <div id="login-entry">
-          <a href="login.html" class="nav-tab" style="text-decoration:none; background:rgba(255,255,255,0.05); font-size:12px; border:1px solid var(--glass-border)">Login / دخول</a>
+          <a href="login.html" class="nav-tab"
+            style="text-decoration:none; background:rgba(255,255,255,0.05); font-size:12px; border:1px solid var(--glass-border)">Login
+            / دخول</a>
         </div>
-        <button id="lang-toggle" class="nav-tab" style="background:var(--surface2); border:1px solid var(--border); font-size:12px; height:32px; padding:0 12px" onclick="toggleLang()"></button>
+        <button id="lang-toggle" class="nav-tab"
+          style="background:var(--surface2); border:1px solid var(--border); font-size:12px; height:32px; padding:0 12px"
+          onclick="toggleLang()"></button>
         <span id="conn-badge" class="conn-badge off"></span>
       </div>
     </nav>
@@ -1331,7 +1451,7 @@
               </div>
               <div class="set-breakdown" id="d-set-breakdown"></div>
             </div>
-            
+
             <div class="point-log">
               <div class="pl-header">
                 <h3 id="log-title-d"></h3>
@@ -2217,12 +2337,12 @@ border:1px solid var(--border2)"></div>
     // Show relevant tabs based on role
     const isAdmin = sessionStorage.getItem('xura_admin') || localStorage.getItem('xura_admin');
     const isRef = sessionStorage.getItem('xura_referee') || localStorage.getItem('xura_referee');
-    
+
     if (isAdmin || isRef) {
       const tabs = document.getElementById('admin-tabs');
       tabs.style.display = 'flex';
       document.getElementById('login-entry').style.display = 'none';
-      
+
       // Filter links based on role
       const links = tabs.querySelectorAll('a');
       links.forEach(link => {
