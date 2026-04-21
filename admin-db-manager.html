@@ -295,13 +295,12 @@
 
 <body>
 
-  <header>
-    <h1>إدارة قاعدة بيانات XURA</h1>
-    <p>قم ببناء البطولات، الأنواع، المراحل السنية، والفرق والحكام</p>
-    <div style="margin-top:10px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="match-setup.html" style="color: var(--blue); font-size: 13px; text-decoration: none;">← إعداد المباراة</a>
-      <a href="#" onclick="adminLogout()" style="color: var(--danger); font-size: 13px; text-decoration: none;">تسجيل خروج المسؤول</a>
+  <header style="display:flex; justify-content:space-between; align-items:center; padding: 20px 40px; border-bottom:1px solid var(--border)">
+    <div>
+      <h1>إدارة قاعدة بيانات XURA</h1>
+      <p>قم ببناء البطولات، الأنواع، المراحل السنية، والفرق والحكام</p>
     </div>
+    <button class="btn btn-danger" onclick="adminLogout()">تسجيل خروج</button>
   </header>
 
   <div class="container" id="app"></div>
@@ -423,7 +422,8 @@
     }
     function adminLogout() {
       sessionStorage.removeItem('xura_admin');
-      window.location.href = 'admin-login.html?redirect=admin-db-manager.html';
+      localStorage.removeItem('xura_admin');
+      window.location.href = 'index.html';
     }
 
     let DB = { tournaments: [] };

@@ -2215,12 +2215,28 @@ border:1px solid var(--border2)"></div>
 
     APP.pollInterval = setInterval(pollReferee, 2000)
 
-    // Show admin tabs if admin/referee session is active
+    // Show relevant tabs based on role
     const isAdmin = sessionStorage.getItem('xura_admin') || localStorage.getItem('xura_admin');
     const isRef = sessionStorage.getItem('xura_referee') || localStorage.getItem('xura_referee');
+    
     if (isAdmin || isRef) {
-      document.getElementById('admin-tabs').style.display = 'flex'
-      document.getElementById('login-entry').style.display = 'none'
+      const tabs = document.getElementById('admin-tabs');
+      tabs.style.display = 'flex';
+      document.getElementById('login-entry').style.display = 'none';
+      
+      // Filter links based on role
+      const links = tabs.querySelectorAll('a');
+      links.forEach(link => {
+        if (isAdmin) {
+          // Admin sees Setup and Database Manager
+          if (link.href.includes('referee-login.html')) link.style.display = 'none';
+        } else if (isRef) {
+          // Referee ONLY sees the Referee App link
+          if (link.href.includes('match-setup.html') || link.href.includes('admin-db-manager.html')) {
+            link.style.display = 'none';
+          }
+        }
+      });
     }
 
     // Firebase init
