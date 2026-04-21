@@ -248,6 +248,14 @@ button,input,select{font-family:inherit}
       <button class="nav-tab active" data-view="home" id="tab-home"></button>
       <button class="nav-tab" data-view="standings" id="tab-standings"></button>
       <button class="nav-tab" data-view="detail" id="detail-tab" style="display:none"></button>
+      
+      <!-- Admin/Referee Tabs (Conditional) -->
+      <div id="admin-tabs" style="display:none; gap:2px; border-inline-start:1px solid var(--border); padding-inline-start:10px; margin-inline-start:10px">
+        <a href="match-setup.html" class="nav-tab" style="text-decoration:none">إعداد مباراة</a>
+        <a href="xura-referee-login.html" class="nav-tab" style="text-decoration:none">تطبيق الحكم</a>
+        <a href="xura-db-manager.html" class="nav-tab" style="text-decoration:none">مدير البيانات</a>
+      </div>
+      
       <button class="nav-tab" data-view="dashboard" id="tab-dashboard"></button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-inline-start:8px">
@@ -1152,12 +1160,21 @@ function demoHeartbeat(){
 }
 
 /* ── Init ─────────────────────────────────────────────────── */
-applyDir()
-updateStaticText()
-seedUpcoming()
-renderStandings()
-pollReferee()
-APP.pollInterval = setInterval(()=>{ demoHeartbeat(); pollReferee() }, 1500)
+  applyDir()
+  updateStaticText()
+  seedUpcoming()
+  renderStandings()
+  pollReferee()
+  
+  // Check for admin/referee permissions
+  const isAdmin = sessionStorage.getItem('xura_admin') || localStorage.getItem('xura_admin');
+  const isRef = sessionStorage.getItem('xura_referee') || localStorage.getItem('xura_referee');
+  if (isAdmin || isRef) {
+    const adminTabs = document.getElementById('admin-tabs');
+    if (adminTabs) adminTabs.style.display = 'flex';
+  }
+
+  APP.pollInterval = setInterval(()=>{ demoHeartbeat(); pollReferee() }, 1500)
 
 window.initFirestoreSync = function() {
   if (window.firebaseConfigured) {

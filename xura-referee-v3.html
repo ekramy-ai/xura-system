@@ -890,6 +890,21 @@ function showMatchOver(){
     <div style="font-size:16px;color:var(--text3);font-variant-numeric:tabular-nums">${setsScores}</div>
   `
   document.getElementById('mo-new').textContent    = t('newMatch')
+  
+  // Add View Details button
+  const actions = document.querySelector('#overlay .card-actions') || document.getElementById('mo-new').parentElement;
+  if (actions) {
+    // Check if button already exists
+    if (!document.getElementById('mo-details')) {
+      const btn = document.createElement('button');
+      btn.id = 'mo-details';
+      btn.className = 'btn';
+      btn.style.cssText = 'background:var(--surface2);color:var(--text2);margin-top:10px';
+      btn.textContent = LANG === 'ar' ? 'عرض تفاصيل المباراة' : 'View Match Details';
+      btn.onclick = () => window.open(`xura-live-v2.html?matchId=${URL_MATCH_ID}`, '_blank');
+      actions.appendChild(btn);
+    }
+  }
   document.getElementById('match-over').classList.add('show')
 }
 
