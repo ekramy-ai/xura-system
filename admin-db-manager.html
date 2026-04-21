@@ -419,11 +419,11 @@
   <script>
     // Admin auth guard
     if (!sessionStorage.getItem('xura_admin')) {
-      window.location.href = 'xura-admin-login.html?redirect=xura-db-manager.html';
+      window.location.href = 'admin-login.html?redirect=admin-db-manager.html';
     }
     function adminLogout() {
       sessionStorage.removeItem('xura_admin');
-      window.location.href = 'xura-admin-login.html?redirect=xura-db-manager.html';
+      window.location.href = 'admin-login.html?redirect=admin-db-manager.html';
     }
 
     let DB = { tournaments: [] };

@@ -298,6 +298,10 @@
   <div id="match-over">
     <h2 id="mo-title"></h2>
     <p id="mo-result"></p>
+    <button class="nav-btn" onclick="window.location.href='index.html'">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Results</span>
+    </button>
     <button id="mo-new" onclick="resetMatch()"></button>
   </div>
 </div>
@@ -901,7 +905,7 @@ function showMatchOver(){
       btn.className = 'btn';
       btn.style.cssText = 'background:var(--surface2);color:var(--text2);margin-top:10px';
       btn.textContent = LANG === 'ar' ? 'عرض تفاصيل المباراة' : 'View Match Details';
-      btn.onclick = () => window.open(`xura-live-v2.html?matchId=${URL_MATCH_ID}`, '_blank');
+      btn.onclick = () => window.open(`index.html?matchId=${URL_MATCH_ID}`, '_blank');
       actions.appendChild(btn);
     }
   }
