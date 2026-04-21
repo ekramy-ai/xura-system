@@ -599,37 +599,41 @@ function isConnected(){
 }
 
 function buildMatch(data){
-  const events = (data?.events || []).filter(e=>!e.is_undone)
-  const setMap = {}
+  const events = (data?.events || []).filter(e=>!e.undone);
+  const setMap = {};
   
-  if (events.length > 0) {
-    events.forEach(e=>{
-      const sn = e.set_num||1
-      if(!setMap[sn]) setMap[sn]={num:sn,homeScore:0,awayScore:0,finished:false,winner:null}
-      setMap[sn].homeScore = e.home_score_after
-      setMap[sn].awayScore = e.away_score_after
-    })
-  } else if (data?.setScores && Array.isArray(data.setScores)) {
-    // Use setScores array from the match document (efficient for list view)
+  // 1. Start with setScores from the match document (most authoritative for totals)
+  if (data?.setScores && Array.isArray(data.setScores)) {
     data.setScores.forEach(s => {
       setMap[s.num] = {
         num: s.num,
         homeScore: s.home,
         awayScore: s.away,
-        finished: s.finished,
+        finished: s.finished || false,
         winner: s.finished ? (s.home > s.away ? 'home' : 'away') : null
-      }
-    })
-  } else {
-    // Fallback to single set if no events or setScores
-    const curSet = data?.currentSetNum || 1;
-    setMap[curSet] = {
-      num: curSet, 
-      homeScore: data?.currentHomeScore || 0, 
-      awayScore: data?.currentAwayScore || 0, 
-      finished: false, 
-      winner: null
+      };
+    });
+  }
+
+  // 2. Overwrite/supplement with events if they provide more granular or newer info
+  events.forEach(e => {
+    const sn = e.set_num || 1;
+    if (!setMap[sn]) {
+      setMap[sn] = { num: sn, homeScore: 0, awayScore: 0, finished: false, winner: null };
     }
+    // Only update if the event score is actually higher or it's the current set
+    if (e.home_score_after > setMap[sn].homeScore) setMap[sn].homeScore = e.home_score_after;
+    if (e.away_score_after > setMap[sn].awayScore) setMap[sn].awayScore = e.away_score_after;
+  });
+
+  // 3. Ensure current set is represented
+  const curSetNum = data?.currentSetNum || 1;
+  if (!setMap[curSetNum]) {
+    setMap[curSetNum] = { num: curSetNum, homeScore: data?.currentHomeScore || 0, awayScore: data?.currentAwayScore || 0, finished: false, winner: null };
+  } else {
+    // If it exists, ensure it has the latest scores from the doc
+    if (data?.currentHomeScore !== undefined) setMap[curSetNum].homeScore = data.currentHomeScore;
+    if (data?.currentAwayScore !== undefined) setMap[curSetNum].awayScore = data.currentAwayScore;
   }
   
   const sets = Object.values(setMap).sort((a,b)=>a.num-b.num)
