@@ -677,7 +677,10 @@ function buildMatch(data){
 
 /* ── Poll Loop ────────────────────────────────────────────── */
 function pollReferee(){
-
+  if (!matchData && APP.selectedMatchId && window.currentLiveMatches) {
+    const m = window.currentLiveMatches.find(x => x.id === APP.selectedMatchId);
+    if (m) matchData = m;
+  }
   const data = readRefereeData()
   const connected = isConnected()
   APP.refereeData = data
@@ -861,8 +864,7 @@ function renderDetail(matchArg){
     return;
   }
 
-  if(!m || m.homeClub.name_ar === 'Home') {
-    // Check if we already have the element before updating it
+  if(!m) {
     const hn = document.getElementById('d-home-name');
     if (hn) hn.textContent = LANG==='ar'?'جاري التحميل...':'Loading...'
     return
@@ -973,8 +975,8 @@ function renderDashboard(matchArg){
   let fins=0; if(m) m.sets.forEach(s=>{if(s.finished)fins++})
   document.getElementById('kpi-sets').textContent = fins
 
-  const hName = LANG==='ar'?CLUBS.home.name_ar:CLUBS.home.name_en
-  const aName = LANG==='ar'?CLUBS.away.name_ar:CLUBS.away.name_en
+  const hName = LANG==='ar' ? m.homeClub.name_ar : m.homeClub.name_en;
+  const aName = LANG==='ar' ? m.awayClub.name_ar : m.awayClub.name_en;
 
   const mList = document.getElementById('dash-matches-list')
   document.getElementById('dash-active-count').textContent = m
