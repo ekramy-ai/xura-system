@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <title>XURA Database Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDY3k5KR2NDncsFtee7u6pXMMi1WvwYq7c",
+      authDomain: "xura-system.firebaseapp.com",
+      projectId: "xura-system",
+      storageBucket: "xura-system.firebasestorage.app",
+      messagingSenderId: "184949976586",
+      appId: "1:184949976586:web:3d70738663ec1d43f639f3"
+    };
+
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.db = initializeFirestore(window.firebaseApp, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})});
+    window.setDocFirebaseDB = setDoc;
+    window.deleteDocFirebaseDB = deleteDoc;
+    window.docFirebaseDB = doc;
+    window.collectionFirebaseDB = collection;
+    window.onSnapshotFirebaseDB = onSnapshot;
+    window.firebaseConfigured = true;
+  </script>
+  <style>
+    /* XURA Design System */
+    :root {
+      --bg: #020617;
+      --surface: rgba(15, 23, 42, 0.8);
+      --border: rgba(51, 65, 85, 0.6);
+      --teal: #14b8a6;
+      --blue: #3b82f6;
+      --text: #f8fafc;
+      --text2: #94a3b8;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      padding-bottom: 80px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      color: var(--teal);
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      color: var(--text2);
+      margin: 5px 0 0;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #fff;
+    }
+
+    .btn {
+      background: var(--teal);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--teal);
+      border: 1px solid var(--teal);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-small {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    /* Categories & Teams */
+    .category-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .category-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--blue);
+    }
+
+    .teams-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .team-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .team-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .delete-icon {
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .delete-icon:hover {
+      color: var(--danger);
+    }
+
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #0f172a;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid var(--teal);
+      width: 400px;
+      max-width: 90%;
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+      color: var(--teal);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--teal);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--text2);
+      font-size: 14px;
+    }
+
+    #floating-save {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--teal);
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 10px 20px rgba(20, 184, 166, 0.3);
+      border: none;
+      font-size: 16px;
+      z-index: 50;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>إدارة قاعدة بيانات XURA</h1>
+    <p>قم ببناء البطولات، الأنواع، المراحل السنية، والفرق والحكام</p>
+    <div style="margin-top:10px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="match-setup.html" style="color: var(--blue); font-size: 13px; text-decoration: none;">← إعداد المباراة</a>
+      <a href="#" onclick="adminLogout()" style="color: var(--danger); font-size: 13px; text-decoration: none;">تسجيل خروج المسؤول</a>
+    </div>
+  </header>
+
+  <div class="container" id="app"></div>
+
+  <!-- قسم الحكام -->
+  <div class="container" style="max-width:800px;margin:0 auto">
+    <div class="card" id="referees-card">
+      <div class="card-header">
+        <h2>👨‍⚖️ إدارة الحكام</h2>
+        <button class="btn" onclick="openModal('modal-referee')">+ إضافة حكم</button>
+      </div>
+      <div id="referees-list"><div class="empty-state">جاري التحميل...</div></div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <h2>🔐 رمز دخول المسؤول (Admin PIN)</h2>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input type="password" id="admin-pin-input" placeholder="رمز جديد (4 أرقام)" maxlength="4" pattern="[0-9]*" inputmode="numeric" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:#020617;color:white;font-size:14px;outline:none;min-width:120px">
+        <button class="btn" onclick="changeAdminPin()">تحديث الرمز</button>
+      </div>
+      <p style="font-size:11px;color:var(--text2);margin-top:8px">الرمز الافتراضي: 0000</p>
+    </div>
+  </div>
+
+  <button id="floating-save" onclick="saveToLocalStorage()" style="display:none">💾 حفظ التعديلات</button>
+
+  <!-- نافذة إضافة بطولة -->
+  <div class="modal" id="modal-tournament">
+    <div class="modal-content">
+      <h3>إضافة بطولة جديدة</h3>
+      <div class="form-group">
+        <label>اسم البطولة</label>
+        <input type="text" id="tour-name" placeholder="مثال: بطولة الجمهورية 2026">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-tournament')">إلغاء</button>
+        <button class="btn" onclick="saveTournament()">إضافة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة إضافة فئة (نوع + مرحلة سنية) -->
+  <div class="modal" id="modal-category">
+    <div class="modal-content">
+      <h3>إضافة مرحلة جديدة</h3>
+      <input type="hidden" id="cat-tour-id">
+      <div class="form-group">
+        <label>النوع (بنين / بنات)</label>
+        <select id="cat-gender">
+          <option value="boys">بنين</option>
+          <option value="girls">بنات</option>
+          <option value="mixed">مختلط</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>المرحلة السنية</label>
+        <input type="text" id="cat-age" placeholder="مثال: U18 أو الدرجة الأولى">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-category')">إلغاء</button>
+        <button class="btn" onclick="saveCategory()">إضافة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة إضافة فريق -->
+  <div class="modal" id="modal-team">
+    <div class="modal-content">
+      <h3>إضافة فريق جديد</h3>
+      <input type="hidden" id="team-tour-id">
+      <input type="hidden" id="team-cat-id">
+      <div class="form-group">
+        <label>اسم الفريق (بالعربية)</label>
+        <input type="text" id="team-name-ar" placeholder="مثال: الزمالك">
+      </div>
+      <div class="form-group">
+        <label>اسم الفريق (بالانجليزية)</label>
+        <input type="text" id="team-name-en" placeholder="مثال: Zamalek">
+      </div>
+      <div class="form-group">
+        <label>لون قميص الفريق الأساسي</label>
+        <input type="color" id="team-color" value="#14b8a6" style="padding: 0; height: 40px;">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-team')">إلغاء</button>
+        <button class="btn" onclick="saveTeam()">إضافة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة إضافة حكم -->
+  <div class="modal" id="modal-referee">
+    <div class="modal-content">
+      <h3>إضافة حكم جديد</h3>
+      <div class="form-group">
+        <label>اسم الحكم (بالعربية)</label>
+        <input type="text" id="ref-name-ar" placeholder="مثال: أحمد محمد">
+      </div>
+      <div class="form-group">
+        <label>اسم الحكم (بالانجليزية)</label>
+        <input type="text" id="ref-name-en" placeholder="مثال: Ahmed Mohamed">
+      </div>
+      <div class="form-group">
+        <label>رمز الدخول (PIN — 4 أرقام)</label>
+        <input type="text" id="ref-pin" placeholder="مثال: 1234" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-referee')">إلغاء</button>
+        <button class="btn" onclick="saveReferee()">إضافة</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Admin auth guard
+    if (!sessionStorage.getItem('xura_admin')) {
+      window.location.href = 'xura-admin-login.html?redirect=xura-db-manager.html';
+    }
+    function adminLogout() {
+      sessionStorage.removeItem('xura_admin');
+      window.location.href = 'xura-admin-login.html?redirect=xura-db-manager.html';
+    }
+
+    let DB = { tournaments: [] };
+    let refereesDB = [];
+    let isModified = false;
+
+    function generateId() {
+      return Math.random().toString(36).substr(2, 9);
+    }
+
+    function init() {
+      if (!DB.tournaments) DB.tournaments = [];
+      render();
+
+      if (window.firebaseConfigured) {
+        window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'tournaments'), (tSnap) => {
+          window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'categories'), (cSnap) => {
+            window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'teams'), (tmSnap) => {
+              let newDB = { tournaments: [] };
+              tSnap.forEach(tDoc => {
+                newDB.tournaments.push({ id: tDoc.id, name: tDoc.data().name, categories: [] });
+              });
+              cSnap.forEach(cDoc => {
+                const c = cDoc.data();
+                const tour = newDB.tournaments.find(x => x.id === c.tournamentId);
+                if (tour) tour.categories.push({ id: cDoc.id, gender: c.gender, gender_ar: c.gender_ar, ageGroup: c.ageGroup, teams: [] });
+              });
+              tmSnap.forEach(tmDoc => {
+                const tm = tmDoc.data();
+                newDB.tournaments.forEach(tour => {
+                  const cat = tour.categories.find(x => x.id === tm.categoryId);
+                  if (cat) cat.teams.push({ id: tmDoc.id, name_ar: tm.name_ar, name_en: tm.name_en, color: tm.color });
+                });
+              });
+              DB = newDB;
+              render();
+            });
+          });
+        });
+
+        // Listen for referees
+        window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'referee_users'), (snap) => {
+          refereesDB = [];
+          snap.forEach(d => refereesDB.push({ id: d.id, ...d.data() }));
+          renderReferees();
+        });
+      }
+    }
+
+    function showSaveButton() {
+      // Saving is now real-time, button is hidden
+    }
+
+    function saveToLocalStorage() {
+      // Legacy function
+    }
+
+    // ========== الرندرة (عرض البيانات) ==========
+    function render() {
+      const app = document.getElementById('app');
+      app.innerHTML = '';
+
+      if (DB.tournaments.length === 0) {
+        app.innerHTML = `
+          <div class="empty-state">
+            <p>لا يوجد أي بطولات مضافة حالياً.</p>
+            <button class="btn" onclick="openModal('modal-tournament')">+ إضافة أول بطولة</button>
+          </div>
+        `;
+        return;
+      }
+
+      // عرض زر إضافة بطولة في الأعلى
+      app.innerHTML += `
+        <div style="text-align: left; margin-bottom: 20px;">
+          <button class="btn" onclick="openModal('modal-tournament')">+ إضافة بطولة جديدة</button>
+        </div>
+      `;
+
+      // حلقة لعرض البطولات
+      DB.tournaments.forEach((tour, tourIndex) => {
+        let html = `
+          <div class="card">
+            <div class="card-header">
+              <h2>🏆 ${tour.name}</h2>
+              <div>
+                <button class="btn btn-outline btn-small" onclick="openCategoryModal('${tour.id}')">+ إضافة مرحلة</button>
+                <button class="btn btn-danger btn-small" onclick="deleteTournament('${tour.id}')">حذف البطولة</button>
+              </div>
+            </div>
+        `;
+
+        if (!tour.categories || tour.categories.length === 0) {
+          html += `<div class="empty-state" style="padding: 10px;">لا يوجد مراحل سنية في هذه البطولة.</div>`;
+        } else {
+          tour.categories.forEach((cat) => {
+            const genderLabel = cat.gender === 'boys' ? 'بنين' : (cat.gender === 'girls' ? 'بنات' : 'مختلط');
+
+            html += `
+              <div class="category-item">
+                <div class="category-header">
+                  <h3>▪ ${genderLabel} - ${cat.ageGroup}</h3>
+                  <div>
+                    <button class="btn btn-small" onclick="openTeamModal('${tour.id}', '${cat.id}')">+ إضافة فريق</button>
+                    <span class="delete-icon" onclick="deleteCategory('${tour.id}', '${cat.id}')" title="حذف المرحلة">×</span>
+                  </div>
+                </div>
+                <div class="teams-grid">
+            `;
+
+            if (!cat.teams || cat.teams.length === 0) {
+              html += `<span style="color: var(--text2); font-size: 13px;">لا توجد فرق مضافة</span>`;
+            } else {
+              cat.teams.forEach((team) => {
+                html += `
+                  <div class="team-badge">
+                    <div class="team-color" style="background-color: ${team.color}"></div>
+                    ${team.name_ar}
+                    <span class="delete-icon" style="margin-right: 5px;" onclick="deleteTeam('${tour.id}', '${cat.id}', '${team.id}')">×</span>
+                  </div>
+                `;
+              });
+            }
+
+            html += `</div></div>`; // إغلاق category-item
+          });
+        }
+
+        html += `</div>`; // إغلاق card
+        app.innerHTML += html;
+      });
+    }
+
+    // ========== التحكم في النوافذ (Modals) ==========
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function openCategoryModal(tourId) {
+      document.getElementById('cat-tour-id').value = tourId;
+      document.getElementById('cat-age').value = '';
+      openModal('modal-category');
+    }
+
+    function openTeamModal(tourId, catId) {
+      document.getElementById('team-tour-id').value = tourId;
+      document.getElementById('team-cat-id').value = catId;
+      document.getElementById('team-name-ar').value = '';
+      document.getElementById('team-name-en').value = '';
+      openModal('modal-team');
+    }
+
+    // ========== وظائف الإضافة ==========
+    function saveTournament() {
+      const name = document.getElementById('tour-name').value.trim();
+      if (!name) return alert('يرجى كتابة اسم البطولة');
+
+      const id = 'tour_' + generateId();
+      if (window.firebaseConfigured) {
+        window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'tournaments', id), { name: name });
+      }
+      closeModal('modal-tournament');
+    }
+
+    function saveCategory() {
+      const tourId = document.getElementById('cat-tour-id').value;
+      const gender = document.getElementById('cat-gender').value;
+      const age = document.getElementById('cat-age').value.trim();
+
+      if (!age) return alert('يرجى كتابة المرحلة السنية');
+      const gender_ar = gender === 'boys' ? 'بنين' : (gender === 'girls' ? 'بنات' : 'مختلط');
+
+      const id = 'cat_' + generateId();
+      if (window.firebaseConfigured) {
+        window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'categories', id), { 
+          tournamentId: tourId, 
+          gender: gender, 
+          gender_ar: gender_ar, 
+          ageGroup: age 
+        });
+      }
+      closeModal('modal-category');
+    }
+
+    function saveTeam() {
+      const tourId = document.getElementById('team-tour-id').value;
+      const catId = document.getElementById('team-cat-id').value;
+      const nameAr = document.getElementById('team-name-ar').value.trim();
+      const nameEn = document.getElementById('team-name-en').value.trim();
+      const color = document.getElementById('team-color').value;
+
+      if (!nameAr) return alert('يرجى كتابة اسم الفريق');
+
+      const id = 'team_' + generateId();
+      if (window.firebaseConfigured) {
+        window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'teams', id), { 
+          categoryId: catId, 
+          name_ar: nameAr, 
+          name_en: nameEn || nameAr, 
+          color: color 
+        });
+      }
+      closeModal('modal-team');
+    }
+
+    // ========== وظائف الحذف ==========
+    function deleteTournament(tourId) {
+      if (confirm('هل أنت متأكد من حذف هذه البطولة بالكامل؟')) {
+        if (window.firebaseConfigured) window.deleteDocFirebaseDB(window.docFirebaseDB(window.db, 'tournaments', tourId));
+      }
+    }
+
+    function deleteCategory(tourId, catId) {
+      if (confirm('هل أنت متأكد من حذف هذه المرحلة؟')) {
+        if (window.firebaseConfigured) window.deleteDocFirebaseDB(window.docFirebaseDB(window.db, 'categories', catId));
+      }
+    }
+
+    function deleteTeam(tourId, catId, teamId) {
+      if (confirm('هل أنت متأكد من حذف هذا الفريق؟')) {
+        if (window.firebaseConfigured) window.deleteDocFirebaseDB(window.docFirebaseDB(window.db, 'teams', teamId));
+      }
+    }
+
+    // ========== وظائف الحكام ==========
+    function renderReferees() {
+      const el = document.getElementById('referees-list');
+      if (refereesDB.length === 0) {
+        el.innerHTML = '<div class="empty-state">لا يوجد حكام مسجلين. أضف حكماً جديداً.</div>';
+        return;
+      }
+      el.innerHTML = '<div class="teams-grid" style="flex-direction:column;gap:8px">' +
+        refereesDB.map(r => `<div class="team-badge" style="justify-content:space-between;padding:10px 14px;width:100%">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--teal);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">${r.name_ar?.charAt(0) || '?'}</div>
+            <div><div style="font-weight:600">${r.name_ar}</div><div style="font-size:11px;color:var(--text2)">${r.name_en || ''} · PIN: ${r.pin || '****'}</div></div>
+          </div>
+          <span class="delete-icon" onclick="deleteReferee('${r.id}')" title="حذف الحكم">×</span>
+        </div>`).join('') +
+        '</div>';
+    }
+
+    function saveReferee() {
+      const nameAr = document.getElementById('ref-name-ar').value.trim();
+      const nameEn = document.getElementById('ref-name-en').value.trim();
+      const pin = document.getElementById('ref-pin').value.trim();
+      if (!nameAr) return alert('يرجى كتابة اسم الحكم');
+      if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) return alert('رمز الدخول يجب أن يكون 4 أرقام');
+      const id = 'ref_' + generateId();
+      if (window.firebaseConfigured) {
+        window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'referee_users', id), {
+          name_ar: nameAr, name_en: nameEn || nameAr, pin: pin, active: true, createdAt: new Date().toISOString()
+        });
+      }
+      closeModal('modal-referee');
+      document.getElementById('ref-name-ar').value = '';
+      document.getElementById('ref-name-en').value = '';
+      document.getElementById('ref-pin').value = '';
+    }
+
+    function deleteReferee(refId) {
+      if (confirm('هل أنت متأكد من حذف هذا الحكم؟')) {
+        if (window.firebaseConfigured) window.deleteDocFirebaseDB(window.docFirebaseDB(window.db, 'referee_users', refId));
+      }
+    }
+
+    async function changeAdminPin() {
+      const newPin = document.getElementById('admin-pin-input').value.trim();
+      if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) return alert('الرمز يجب أن يكون 4 أرقام');
+      if (window.firebaseConfigured) {
+        await window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'config', 'admin'), { pin: newPin });
+        alert('تم تحديث رمز المسؤول بنجاح');
+        document.getElementById('admin-pin-input').value = '';
+      }
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

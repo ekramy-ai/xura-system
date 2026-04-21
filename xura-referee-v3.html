@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#020617">
+<title>XURA Referee</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --teal:#5eead4;--teal-dark:#0d9488;--teal-bg:#134e4a;
+    --blue:#60a5fa;--blue-dark:#1d4ed8;--blue-bg:#1e3a5f;
+    --bg:#020617;--surface:#0f172a;--surface2:#1e293b;
+    --muted:#475569;--faint:#334155;--text:#e2e8f0;
+    --amber:#f59e0b;--red:#ef4444;--green:#4ade80;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);
+    font-family:'Noto Sans Arabic','Segoe UI',Tahoma,sans-serif;overflow:hidden}
+  #app{display:flex;flex-direction:column;height:100dvh;max-width:420px;margin:0 auto;position:relative}
+
+  /* Header */
+  #header{padding:12px 14px 10px;border-bottom:1px solid var(--surface2);
+    display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
+  #sets-won{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  #sets-won .n{font-size:22px;font-weight:900;line-height:1}
+  #sets-won .sep{color:var(--faint)}
+  .status-badge{font-size:10px;padding:3px 8px;border-radius:6px;white-space:nowrap}
+
+  /* Lang toggle */
+  #lang-btn{
+    padding:4px 10px;border-radius:20px;border:1px solid var(--surface2);
+    background:transparent;color:var(--teal);font-size:11px;font-weight:700;
+    cursor:pointer;font-family:inherit;letter-spacing:.05em;flex-shrink:0;
+    transition:background .15s}
+  #lang-btn:hover{background:var(--surface)}
+
+  /* Set Tabs */
+  #tabs{display:flex;gap:5px;padding:10px 12px 0;flex-shrink:0}
+  .tab{flex:1;padding:6px 2px;border-radius:8px;border:none;cursor:pointer;
+    font-size:11px;font-family:inherit;transition:all .15s;line-height:1.2}
+  .tab.active{background:var(--teal-bg);color:var(--teal);font-weight:700}
+  .tab.done{background:var(--surface);color:var(--muted)}
+  .tab.pending{background:var(--surface);color:var(--faint)}
+
+  /* Score */
+  #score-area{flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;padding:16px;transition:background .35s}
+  #score-area.flash-home{animation:fh .4s ease}
+  #score-area.flash-away{animation:fa .4s ease}
+  @keyframes fh{0%,100%{background:var(--bg)}35%{background:#0d2e2a}}
+  @keyframes fa{0%,100%{background:var(--bg)}35%{background:#0e1f3d}}
+  #scores{display:flex;align-items:center;gap:20px;margin-bottom:6px}
+  .score-num{font-size:84px;font-weight:900;line-height:1;letter-spacing:-3px;
+    font-variant-numeric:tabular-nums}
+  .score-num.bump{animation:bump .18s ease}
+  @keyframes bump{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .score-divider{font-size:32px;color:var(--faint);font-weight:200}
+  .club-sub{font-size:11px;text-align:center;margin-top:4px;opacity:.5}
+  #set-hint{font-size:10px;color:var(--faint);margin-top:8px}
+
+  /* Buttons */
+  #btn-row{display:flex;gap:10px;padding:0 16px 10px;flex-shrink:0}
+  .score-btn{flex:1;height:88px;border-radius:18px;border:1.5px solid;
+    font-family:inherit;font-size:15px;font-weight:700;color:#fff;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    transition:transform .1s,filter .1s;touch-action:manipulation}
+  .score-btn:active{transform:scale(.92)!important;filter:brightness(1.2)}
+  .score-btn small{font-size:11px;font-weight:400;opacity:.75}
+  .score-btn.home{background:var(--teal-dark);border-color:var(--teal-bg)}
+  .score-btn.away{background:var(--blue-dark);border-color:var(--blue-bg)}
+  .score-btn:disabled{opacity:.35;cursor:not-allowed}
+
+  /* Secondary */
+  #sec-row{display:flex;gap:8px;padding:0 16px 8px;flex-shrink:0}
+  .sec-btn{flex:1;padding:9px;background:transparent;border:1px solid var(--surface2);
+    border-radius:12px;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;
+    transition:background .1s}
+  .sec-btn:hover{background:var(--surface)}
+  .sec-btn.warning{color:var(--amber);border-color:#422006}
+  #sync-btn{padding:9px 12px;background:#422006;border:1px solid #92400e;
+    border-radius:12px;color:var(--amber);font-size:12px;font-family:inherit;cursor:pointer;display:none}
+
+  /* Log */
+  #log-wrap{margin:0 16px 10px;border:1px solid var(--surface2);border-radius:12px;
+    overflow:hidden;flex-shrink:0}
+  #log-title{padding:5px 12px;font-size:10px;color:var(--faint);
+    border-bottom:1px solid var(--surface2);background:#0a0f1e}
+  #log-list{background:#050a14}
+  .log-item{display:flex;justify-content:space-between;align-items:center;
+    padding:6px 12px;font-size:11px;border-bottom:1px solid #060d1a;
+    animation:slideIn .2s ease}
+  .log-item:last-child{border-bottom:none}
+  .log-item.undone{opacity:.3;text-decoration:line-through}
+  .log-type{display:flex;align-items:center;gap:4px}
+  @keyframes slideIn{from{transform:translateX(8px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+  /* Overlay */
+  #overlay{position:absolute;inset:0;background:rgba(0,0,0,.82);
+    display:none;flex-direction:column;align-items:center;justify-content:flex-end;z-index:50}
+  #overlay.open{display:flex;animation:ovFade .15s ease}
+  @keyframes ovFade{from{opacity:0}to{opacity:1}}
+  #ov-info{position:absolute;top:10%;text-align:center}
+  #ov-club{font-size:14px;font-weight:600;letter-spacing:.05em;margin-bottom:6px}
+  #ov-hint{font-size:11px;color:var(--muted)}
+  #ov-panel{width:100%;max-width:420px;background:var(--surface);
+    border-radius:24px 24px 0 0;padding:18px 14px 28px;animation:panelUp .22s ease}
+  @keyframes panelUp{from{transform:translateY(36px);opacity:0}to{transform:translateY(0);opacity:1}}
+  #ov-header{display:flex;align-items:center;justify-content:space-between;
+    padding-bottom:12px;border-bottom:1px solid var(--surface2);margin-bottom:14px}
+  #ov-name{font-size:16px;font-weight:700}
+  #ov-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  #cd-wrap{position:relative;width:44px;height:44px;flex-shrink:0}
+  #cd-wrap svg{transform:rotate(-90deg)}
+  #cd-num{position:absolute;inset:0;display:flex;align-items:center;
+    justify-content:center;font-size:13px;font-weight:700;
+    font-variant-numeric:tabular-nums;transition:color .3s}
+  #ov-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .pt-btn{border-radius:14px;padding:13px 6px;border:1.5px solid;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    transition:transform .1s,filter .1s,background .1s;font-family:inherit}
+  .pt-btn:active{transform:scale(.91)!important;filter:brightness(1.3)}
+  .pt-btn .ic{font-size:22px;line-height:1;font-weight:900}
+  .pt-btn .lb{font-size:13px;font-weight:600;line-height:1}
+  .pt-btn .sk{font-size:10px;font-family:monospace;opacity:.55}
+  #ov-cancel{width:100%;margin-top:10px;padding:10px;background:transparent;
+    border:1px solid var(--surface2);border-radius:12px;color:var(--muted);
+    font-size:13px;font-family:inherit;cursor:pointer}
+  #ov-kbd{text-align:center;margin-top:8px;font-size:10px;color:var(--surface2)}
+
+  /* Detail mode toggle */
+  #detail-toggle-wrap{display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 16px 6px;flex-shrink:0}
+  #detail-toggle-wrap label{font-size:11px;color:var(--muted);cursor:pointer}
+  .toggle-sw{position:relative;width:36px;height:20px;cursor:pointer}
+  .toggle-sw input{opacity:0;width:0;height:0}
+  .toggle-sw .slider{position:absolute;inset:0;background:var(--surface2);border-radius:10px;transition:.2s}
+  .toggle-sw .slider::before{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#94a3b8;left:2px;top:2px;transition:.2s}
+  .toggle-sw input:checked+.slider{background:var(--teal-bg)}
+  .toggle-sw input:checked+.slider::before{transform:translateX(16px);background:var(--teal)}
+
+  /* Player number step */
+  #player-step{display:none;flex-direction:column;gap:10px}
+  #player-step.show{display:flex}
+  #player-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .pnum-btn{width:100%;padding:10px 4px;border-radius:12px;border:1.5px solid var(--surface2);
+    background:var(--surface);color:var(--text);font-size:16px;font-weight:700;
+    cursor:pointer;transition:all .12s;font-family:inherit}
+  .pnum-btn:hover{border-color:var(--teal-dark);background:var(--teal-bg)}
+  .pnum-btn:active{transform:scale(.92)}
+  .pnum-btn.selected{border-color:var(--teal);background:var(--teal-bg);color:var(--teal)}
+  #player-skip{margin-top:2px;padding:8px;background:transparent;border:1px solid var(--surface2);
+    border-radius:10px;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer}
+  #type-step{display:flex;flex-direction:column;gap:9px}
+  #step-title{font-size:13px;font-weight:600;color:var(--teal);margin-bottom:4px;text-align:center}
+
+  /* Match Over */
+  #match-over{display:none;position:absolute;inset:0;background:rgba(2,6,23,.96);
+    flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:60}
+  #match-over.show{display:flex}
+  #match-over h2{font-size:28px;font-weight:900;color:var(--teal)}
+  #match-over p{font-size:16px;color:var(--muted)}
+  #match-over button{padding:12px 32px;border-radius:14px;border:none;
+    background:var(--teal-dark);color:#fff;font-size:14px;font-family:inherit;cursor:pointer;margin-top:8px}
+</style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDY3k5KR2NDncsFtee7u6pXMMi1WvwYq7c",
+      authDomain: "xura-system.firebaseapp.com",
+      projectId: "xura-system",
+      storageBucket: "xura-system.firebasestorage.app",
+      messagingSenderId: "184949976586",
+      appId: "1:184949976586:web:3d70738663ec1d43f639f3"
+    };
+
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.db = initializeFirestore(window.firebaseApp, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})});
+    window.setDocFirebaseDB = setDoc;
+    window.getDocFirebaseDB = getDoc;
+    window.updateDocFirebaseDB = updateDoc;
+    window.docFirebaseDB = doc;
+    window.collectionFirebaseDB = collection;
+    window.firebaseConfigured = true;
+    if (typeof window.initFirestoreSync === 'function') {
+      window.initFirestoreSync();
+    }
+  </script>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div style="min-width:0">
+      <div style="font-size:11px;color:var(--muted)" id="set-label"></div>
+      <div style="font-size:10px;color:var(--faint);margin-top:2px" id="pending-info"></div>
+    </div>
+    <div id="sets-won">
+      <span class="n" id="sw-home" style="color:var(--teal)">0</span>
+      <span class="sep">—</span>
+      <span class="n" id="sw-away" style="color:var(--blue)">0</span>
+      <span id="sets-label" style="font-size:10px;color:var(--faint);margin-inline-start:4px"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <div id="ref-display" style="font-size:10px; color:var(--text2); text-align:right; margin-inline-end:8px"></div>
+      <button id="lang-btn" onclick="toggleLang()"></button>
+      <div id="online-badge" class="status-badge" style="background:#052e16;color:var(--green)"></div>
+    </div>
+  </div>
+
+  <div id="tabs"></div>
+
+  <div id="score-area">
+    <div id="scores">
+      <div style="text-align:center">
+        <div class="score-num" id="sh" style="color:var(--teal)">0</div>
+        <div class="club-sub" id="hn"></div>
+      </div>
+      <div class="score-divider">:</div>
+      <div style="text-align:center">
+        <div class="score-num" id="sa" style="color:var(--blue)">0</div>
+        <div class="club-sub" id="an"></div>
+      </div>
+    </div>
+    <div id="set-hint"></div>
+  </div>
+
+  <div id="btn-row" style="height:auto">
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px">
+      <button class="score-btn home" id="btn-home" onclick="pressScore('home')" style="min-height:90px">
+        <small id="btn-hn"></small><span id="btn-home-label"></span>
+      </button>
+      <button class="score-btn home" onclick="decrementScore('home')" style="background:var(--surface2); border:1px solid rgba(20,184,166,0.3); color:var(--teal); min-height:44px; font-size:16px">- 1</button>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px">
+      <button class="score-btn away" id="btn-away" onclick="pressScore('away')" style="min-height:90px">
+        <small id="btn-an"></small><span id="btn-away-label"></span>
+      </button>
+      <button class="score-btn away" onclick="decrementScore('away')" style="background:var(--surface2); border:1px solid rgba(56,189,248,0.3); color:var(--blue); min-height:44px; font-size:16px">- 1</button>
+    </div>
+  </div>
+
+  <div id="detail-toggle-wrap">
+    <label id="detail-label" for="detail-check">تفاصيل اللاعب</label>
+    <label class="toggle-sw"><input type="checkbox" id="detail-check" onchange="toggleDetailMode()"><span class="slider"></span></label>
+  </div>
+
+  <div id="sec-row">
+    <button class="sec-btn" id="undo-btn" onclick="undoLast()"></button>
+    <button class="sec-btn warning" id="endset-btn" onclick="endSet()"></button>
+    <button id="sync-btn" onclick="syncNow()"></button>
+  </div>
+
+  <div id="log-wrap">
+    <div id="log-title"></div>
+    <div id="log-list">
+      <div id="log-empty" style="padding:8px 12px;font-size:11px;color:var(--faint);text-align:center"></div>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="overlay">
+    <div id="ov-info">
+      <div id="ov-club"></div>
+      <div id="ov-hint"></div>
+    </div>
+    <div id="ov-panel" onclick="event.stopPropagation()">
+      <div id="ov-header">
+        <div>
+          <div id="ov-name"></div>
+          <div id="ov-sub"></div>
+        </div>
+        <div id="cd-wrap">
+          <svg width="44" height="44">
+            <circle cx="22" cy="22" r="16" fill="none" stroke="#1e293b" stroke-width="3"/>
+            <circle id="cd-ring" cx="22" cy="22" r="16" fill="none"
+              stroke="#334155" stroke-width="3"
+              stroke-dasharray="100.5" stroke-dashoffset="0" stroke-linecap="round"/>
+          </svg>
+          <div id="cd-num">8</div>
+        </div>
+      </div>
+      <div id="player-step">
+        <div id="step-title"></div>
+        <div id="player-grid"></div>
+        <button id="player-skip" onclick="skipPlayer()"></button>
+      </div>
+      <div id="type-step">
+        <div id="ov-grid"></div>
+      </div>
+      <button id="ov-cancel" onclick="closeOverlay()"></button>
+      <div id="ov-kbd"></div>
+    </div>
+  </div>
+
+  <!-- Match Over -->
+  <div id="match-over">
+    <h2 id="mo-title"></h2>
+    <p id="mo-result"></p>
+    <button id="mo-new" onclick="resetMatch()"></button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   XURA Referee v3 — Bilingual AR / EN
+   ═══════════════════════════════════════════════════════ */
+
+/* ── i18n ─────────────────────────────────────────────── */
+const TRANSLATIONS = {
+  en: {
+    setLabel:     (n,t)=>`Set ${n} of ${t}`,
+    setsLabel:    'Sets',
+    online:       'Online',
+    offline:      'Offline',
+    setHintNorm:  'Win at: 25 pts, lead by 2',
+    setHintFinal: 'Win at: 15 pts, lead by 2',
+    pointBtn:     'Point +',
+    undoBtn:      'Undo ↩',
+    endSetBtn:    'End Set ▸',
+    syncBtn:      'Sync ↑',
+    logTitle:     'Recent Events',
+    logEmpty:     'Tap a button to start',
+    ovHint:       'Choose point type',
+    ovSub:        'Point for',
+    ovCancel:     'Cancel',
+    ovKbd:        'Press [0–5] to select · Esc to cancel',
+    matchOver:    'Match Over',
+    matchWon:     (name,h,a)=>`<div style="font-size:24px;margin-bottom:8px">${name} wins <b style="color:var(--teal)">${h}—${a}</b></div>`,
+    newMatch:     'New Match',
+    setEnded:     (n,next)=>`Set ${n} ended → Set ${next}`,
+    undone:       'Undone',
+    synced:       'Synced',
+    pendingPts:   (n)=>`${n} pts pending`,
+    set:          (n)=>`S${n}`,
+    // point types
+    point:        'Point',
+    attack:       'Attack',
+    serve_ace:    'Ace',
+    block:        'Block',
+    opponent_error:'Opp. Error',
+    dig:          'Dig',
+    other:        'Other',
+    selectPlayer: 'Select Player Number',
+    skipPlayer:   'Skip — No Player',
+    detailLabel:  'Player + Skill Details',
+  },
+  ar: {
+    setLabel:     (n,t)=>`الشوط ${n} من ${t}`,
+    setsLabel:    'أشواط',
+    online:       'متصل',
+    offline:      'غير متصل',
+    setHintNorm:  'للفوز: 25 نقطة بفارق 2',
+    setHintFinal: 'للفوز: 15 نقطة بفارق 2',
+    pointBtn:     'نقطة +',
+    undoBtn:      'تراجع ↩',
+    endSetBtn:    'إنهاء الشوط ▸',
+    syncBtn:      'زامن ↑',
+    logTitle:     'آخر الأحداث',
+    logEmpty:     'اضغط نقطة للبدء',
+    ovHint:       'اختر نوع النقطة',
+    ovSub:        'نقطة لـ',
+    ovCancel:     'إلغاء',
+    ovKbd:        'اضغط [0–5] للاختيار · Esc للإلغاء',
+    matchOver:    'انتهت المباراة',
+    matchWon:     (name,h,a)=>`<div style="font-size:24px;margin-bottom:8px">فاز ${name} <b style="color:var(--teal)">${h}—${a}</b></div>`,
+    newMatch:     'مباراة جديدة',
+    setEnded:     (n,next)=>`انتهى الشوط ${n} ← الشوط ${next}`,
+    undone:       'تم التراجع',
+    synced:       'تمّت المزامنة',
+    pendingPts:   (n)=>`${n} نقطة معلّقة`,
+    set:          (n)=>`ش${n}`,
+    point:        'نقطة',
+    attack:       'ضرب',
+    serve_ace:    'إيس',
+    block:        'كتلة',
+    opponent_error:'خطأ خصم',
+    dig:          'استقبال',
+    other:        'أخرى',
+    selectPlayer: 'اختر رقم اللاعب',
+    skipPlayer:   'تخطي — بدون لاعب',
+    detailLabel:  'لاعب + مهارة',
+  }
+}
+
+/* Auto-detect: default English, fallback Arabic if browser lang starts with 'ar' */
+const browserLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase()
+let LANG = browserLang.startsWith('ar') ? 'ar' : 'en'
+
+function t(key, ...args) {
+  const val = TRANSLATIONS[LANG][key]
+  return typeof val === 'function' ? val(...args) : val
+}
+
+function applyDir() {
+  document.documentElement.lang = LANG
+  document.documentElement.dir  = LANG === 'ar' ? 'rtl' : 'ltr'
+  document.getElementById('lang-btn').textContent = LANG === 'ar' ? 'EN' : 'عر'
+}
+
+function toggleLang() {
+  LANG = LANG === 'ar' ? 'en' : 'ar'
+  localStorage.setItem('xura_lang', LANG)
+  applyDir()
+  renderAll()
+}
+
+// Restore saved lang preference
+const savedLang = localStorage.getItem('xura_lang')
+if (savedLang === 'ar' || savedLang === 'en') LANG = savedLang
+
+/* ── CLUBS & MATCH SETUP ─────────────────────────────── */
+const URL_MATCH_ID = new URLSearchParams(window.location.search).get('matchId');
+if (!URL_MATCH_ID) {
+  window.location.href = "match-setup.html";
+}
+
+let matchData = null;
+let CLUBS = null;
+
+const clubName = (side) => CLUBS && CLUBS[side] ? (LANG === 'ar' ? CLUBS[side].name_ar : CLUBS[side].name_en) : '';
+
+/* ── POINT TYPES ──────────────────────────────────────── */
+const POINT_TYPE_META = [
+  { id:'attack',         icon:'▲', color:'#f97316', bg:'#431407', border:'#9a3412', shortcut:'1' },
+  /* 'point' type used internally for quick mode — not shown in overlay grid */
+  { id:'serve_ace',      icon:'◎', color:'#facc15', bg:'#422006', border:'#92400e', shortcut:'2' },
+  { id:'block',          icon:'■', color:'#38bdf8', bg:'#0c1a3a', border:'#1e40af', shortcut:'3' },
+  { id:'opponent_error', icon:'✕', color:'#f87171', bg:'#3b0764', border:'#7e22ce', shortcut:'4' },
+  { id:'dig',            icon:'↙', color:'#4ade80', bg:'#052e16', border:'#166534', shortcut:'5' },
+  { id:'other',          icon:'●', color:'#94a3b8', bg:'#0f172a', border:'#334155', shortcut:'6' },
+]
+const ptLabel = (id) => t(id)
+
+/* ── State ────────────────────────────────────────────── */
+const S = {
+  sets: Array.from({length:5},(_,i)=>({num:i+1,home:0,away:0,status:i===0?'active':'pending',winner:null})),
+  cur: 0,
+  setsWon: {home:0,away:0},
+  matchDone: false,
+  events: [],
+  overlay: null,
+  cdInterval: null,
+  cdSec: 8,
+  circumference: 2 * Math.PI * 16,
+  detailMode: false,
+  selectedPlayer: null,
+}
+
+/* ── Offline Queue ────────────────────────────────────── */
+function enqueue(ev){
+  ev.matchId = URL_MATCH_ID;
+  const id = 'evt_' + Date.now() + Math.floor(Math.random()*1000);
+  if (window.firebaseConfigured) {
+    window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'events', id), ev);
+    window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'referees', URL_MATCH_ID), { lastActive: Date.now(), matchId: URL_MATCH_ID });
+  }
+}
+async function syncNow(){}
+function renderPending(){}
+
+/* ── Online ───────────────────────────────────────────── */
+function updateOnline(){
+  const b = document.getElementById('online-badge')
+  if(navigator.onLine){
+    b.style.background='#052e16'; b.style.color='var(--green)'
+    b.textContent = t('online')
+    syncNow()
+  } else {
+    b.style.background='#3b0764'; b.style.color='#c4b5fd'
+    b.textContent = t('offline')
+  }
+}
+window.addEventListener('online',  updateOnline)
+window.addEventListener('offline', updateOnline)
+
+/* ── Render ───────────────────────────────────────────── */
+function activeSet(){ return S.sets[S.cur] }
+
+function renderAll(){
+  applyDir()
+  const s = activeSet()
+
+  document.getElementById('sh').textContent = s.home
+  document.getElementById('sa').textContent = s.away
+  document.getElementById('hn').textContent = clubName('home')
+  document.getElementById('an').textContent = clubName('away')
+  document.getElementById('btn-hn').textContent = clubName('home')
+  document.getElementById('btn-an').textContent = clubName('away')
+  document.getElementById('btn-home-label').textContent = t('pointBtn')
+  document.getElementById('btn-away-label').textContent = t('pointBtn')
+  document.getElementById('set-label').textContent = t('setLabel', s.num, 5)
+  document.getElementById('sets-label').textContent = t('setsLabel')
+  document.getElementById('sw-home').textContent = S.setsWon.home
+  document.getElementById('sw-away').textContent = S.setsWon.away
+  document.getElementById('set-hint').textContent = s.num < 5 ? t('setHintNorm') : t('setHintFinal')
+  document.getElementById('undo-btn').textContent   = t('undoBtn')
+  document.getElementById('endset-btn').textContent = t('endSetBtn')
+  document.getElementById('detail-label').textContent = t('detailLabel')
+  document.getElementById('log-title').textContent  = t('logTitle')
+  document.getElementById('ov-hint').textContent    = t('ovHint')
+  document.getElementById('ov-sub').textContent     = t('ovSub')
+  document.getElementById('ov-cancel').textContent  = t('ovCancel')
+  document.getElementById('ov-kbd').textContent     = t('ovKbd')
+  document.getElementById('mo-new').textContent     = t('newMatch')
+  updateOnline()
+
+  const disabled = S.matchDone || s.status !== 'active'
+  document.getElementById('btn-home').disabled = disabled
+  document.getElementById('btn-away').disabled = disabled
+
+  renderTabs()
+  renderLog()
+  renderPending()
+}
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs')
+  tabs.innerHTML = ''
+  S.sets.forEach((s,i)=>{
+    const btn = document.createElement('button')
+    btn.className = 'tab ' + (i===S.cur ? 'active' : s.status==='finished' ? 'done' : 'pending')
+    btn.textContent = s.status==='finished' ? `${s.home}-${s.away}` : t('set', s.num)
+    btn.onclick = ()=>{ S.cur=i; renderAll() }
+    tabs.appendChild(btn)
+  })
+}
+
+function renderLog(){
+  const list = document.getElementById('log-list')
+  const visible = [...S.events].reverse().slice(0,5)
+  if(!visible.length){
+    list.innerHTML = `<div id="log-empty" style="padding:8px 12px;font-size:11px;color:var(--faint);text-align:center">${t('logEmpty')}</div>`
+    return
+  }
+  list.innerHTML = visible.map(e=>{
+    const pt   = POINT_TYPE_META.find(p=>p.id===e.type)
+    const side = e.side==='home' ? CLUBS.home : CLUBS.away
+    const sName = LANG==='ar' ? side.name_ar : side.name_en
+    const pNum = e.playerNum ? ` #${e.playerNum}` : ''
+    const skillTxt = e.type!=='point' ? `<span class="log-type" style="color:${pt?.color||'#94a3b8'}"><span>${pt?.icon||'●'}</span><span>${ptLabel(e.type)}</span></span>` : ''
+    return `<div class="log-item${e.undone?' undone':''}">
+      <span style="color:${side.color};font-weight:600">${sName}${pNum}</span>
+      ${skillTxt}
+      <span style="color:var(--faint);font-variant-numeric:tabular-nums">${e.hAfter}—${e.aAfter}</span>
+    </div>`
+  }).join('')
+}
+
+/* ── Detail Mode Toggle ───────────────────────────────── */
+function toggleDetailMode(){
+  S.detailMode = document.getElementById('detail-check').checked
+  localStorage.setItem('xura_detail_mode', S.detailMode?'1':'0')
+}
+// restore
+if(localStorage.getItem('xura_detail_mode')==='1'){
+  S.detailMode = true
+  setTimeout(()=>{ document.getElementById('detail-check').checked = true },0)
+}
+
+/* ── Score / Overlay ──────────────────────────────────── */
+function pressScore(side){
+  if(S.matchDone) return
+  const s = activeSet()
+  if(s.status !== 'active') return
+  S.selectedPlayer = null
+
+  if(!S.detailMode){
+    // Quick mode: add point directly, no overlay
+    recordPoint(side, 'point')
+    return
+  }
+
+  // Detail mode: show overlay with player + skill
+  S.overlay = side
+  openOverlay(side)
+}
+
+function openOverlay(side){
+  document.getElementById('ov-club').style.color = CLUBS[side].color
+  document.getElementById('ov-club').textContent = clubName(side)
+  document.getElementById('ov-name').style.color = CLUBS[side].color
+  document.getElementById('ov-name').textContent = clubName(side)
+  document.getElementById('ov-hint').textContent = t('ovHint')
+  document.getElementById('ov-sub').textContent  = t('ovSub')
+  document.getElementById('ov-cancel').textContent = t('ovCancel')
+  document.getElementById('ov-kbd').textContent  = t('ovKbd')
+
+  showPlayerStep()
+  buildGrid()
+  document.getElementById('overlay').classList.add('open')
+  startCountdown()
+}
+
+function showPlayerStep(){
+  document.getElementById('player-step').classList.add('show')
+  document.getElementById('type-step').style.display = 'none'
+  document.getElementById('step-title').textContent = t('selectPlayer')
+  document.getElementById('player-skip').textContent = t('skipPlayer')
+  buildPlayerGrid()
+}
+
+function showTypeStep(){
+  document.getElementById('player-step').classList.remove('show')
+  document.getElementById('type-step').style.display = 'flex'
+}
+
+function buildPlayerGrid(){
+  const grid = document.getElementById('player-grid')
+  grid.innerHTML = ''
+  for(let i=1;i<=16;i++){
+    const btn = document.createElement('button')
+    btn.className = 'pnum-btn'
+    btn.textContent = i
+    btn.onclick = ()=> selectPlayer(i)
+    grid.appendChild(btn)
+  }
+}
+
+function selectPlayer(num){
+  S.selectedPlayer = num
+  document.querySelectorAll('.pnum-btn').forEach(b=>b.classList.remove('selected'))
+  event.target.classList.add('selected')
+  setTimeout(()=>{
+    showTypeStep()
+    clearInterval(S.cdInterval)
+    S.cdSec = 8
+    startCountdown()
+  }, 200)
+}
+
+function skipPlayer(){
+  S.selectedPlayer = null
+  showTypeStep()
+  clearInterval(S.cdInterval)
+  S.cdSec = 8
+  startCountdown()
+}
+
+function buildGrid(){
+  const grid = document.getElementById('ov-grid')
+  grid.innerHTML = ''
+  POINT_TYPE_META.forEach(pt=>{
+    const btn = document.createElement('button')
+    btn.className = 'pt-btn'
+    btn.style.cssText = `background:${pt.bg};border-color:${pt.border}`
+    btn.innerHTML = `<span class="ic" style="color:${pt.color}">${pt.icon}</span>
+      <span class="lb" style="color:#e2e8f0">${ptLabel(pt.id)}</span>
+      <span class="sk">[${pt.shortcut}]</span>`
+    btn.onclick = ()=>confirmType(pt.id)
+    grid.appendChild(btn)
+  })
+}
+
+/* ── Sync ──────────────────────────────────────────────── */
+function syncMatchState() {
+  if (!window.firebaseConfigured || !URL_MATCH_ID) return;
+  const s = activeSet();
+  const setScores = S.sets.map(x => ({ num: x.num, home: x.home, away: x.away, finished: x.status === 'finished' }));
+  window.updateDocFirebaseDB(window.docFirebaseDB(window.db, 'matches', URL_MATCH_ID), {
+    currentHomeScore: s.home,
+    currentAwayScore: s.away,
+    currentSetNum: S.cur + 1,
+    homeSets: S.setsWon.home,
+    awaySets: S.setsWon.away,
+    setScores: setScores,
+    lastUpdate: new Date().toISOString()
+  });
+}
+
+function startCountdown(){
+  S.cdSec = 8
+  updateRing()
+  clearInterval(S.cdInterval)
+  S.cdInterval = setInterval(()=>{
+    S.cdSec--
+    updateRing()
+    if(S.cdSec <= 0){ clearInterval(S.cdInterval); confirmType('other') }
+  }, 1000)
+}
+
+function updateRing(){
+  const ring = document.getElementById('cd-ring')
+  const num  = document.getElementById('cd-num')
+  const progress = (S.cdSec / 8) * S.circumference
+  ring.style.strokeDashoffset = String(S.circumference - progress)
+  ring.style.stroke = S.cdSec <= 3 ? '#ef4444' : '#334155'
+  num.style.color   = S.cdSec <= 3 ? '#ef4444' : '#94a3b8'
+  num.textContent   = String(S.cdSec)
+}
+
+function closeOverlay(){
+  clearInterval(S.cdInterval)
+  S.overlay = null
+  document.getElementById('overlay').classList.remove('open')
+}
+
+function confirmType(typeId){
+  if(!S.overlay) return
+  clearInterval(S.cdInterval)
+  const side = S.overlay
+  closeOverlay()
+  recordPoint(side, typeId)
+}
+
+function recordPoint(side, typeId){
+  const s = activeSet()
+  if(s.status !== 'active') return
+  if(side==='home') s.home++; else s.away++
+
+  const area = document.getElementById('score-area')
+  area.classList.remove('flash-home','flash-away')
+  void area.offsetWidth
+  area.classList.add(side==='home'?'flash-home':'flash-away')
+
+  const el = document.getElementById(side==='home'?'sh':'sa')
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump')
+
+  const evtId = 'evt_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+  const evt = { id: evtId, side, type:typeId, hAfter:s.home, aAfter:s.away, setNum:s.num, undone:false }
+  if(S.selectedPlayer) evt.playerNum = S.selectedPlayer
+  S.events.push(evt)
+
+  if (window.firebaseConfigured) {
+    const qEvt = {
+      matchId: URL_MATCH_ID,
+      scoring_side: side,
+      home_score_after: s.home,
+      away_score_after: s.away,
+      point_type: typeId,
+      set_num: s.num,
+      recorded_at: new Date().toISOString(),
+      undone: false
+    }
+    if(S.selectedPlayer) qEvt.player_num = S.selectedPlayer
+    window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'events', evtId), qEvt)
+  }
+
+  S.selectedPlayer = null
+  renderAll()
+  checkSetWinner()
+  syncMatchState()
+}
+
+function checkSetWinner(){
+  const s = activeSet()
+  if(s.status !== 'active') return
+  
+  const limit = s.num < 5 ? 25 : 15
+  if(Math.max(s.home, s.away) >= limit && Math.abs(s.home - s.away) >= 2){
+    endSet() // Immediate transition
+  }
+}
+
+/* ── Decrement ────────────────────────────────────────── */
+function decrementScore(side){
+  if(S.matchDone) {
+    S.matchDone = false
+    document.getElementById('match-over').classList.remove('show')
+    if (window.firebaseConfigured) {
+      window.updateDocFirebaseDB(window.docFirebaseDB(window.db, 'matches', URL_MATCH_ID), {
+        status: 'live',
+        score: null
+      });
+    }
+  }
+
+  let s = activeSet()
+  
+  // If we are at 0-0 in a new set, maybe the referee wants to decrement the PREVIOUS set score!
+  if(s[side] === 0 && S.cur > 0 && S.sets[S.cur].home === 0 && S.sets[S.cur].away === 0) {
+    S.sets[S.cur].status = 'pending'
+    S.cur--
+    s = activeSet()
+    s.status = 'active'
+    if(s.winner){
+      S.setsWon[s.winner]--
+      s.winner = null
+    }
+  }
+
+  if(s[side] > 0){
+    s[side]--
+    
+    // Add an event to the queue so the live app syncs the new lowered score
+    const evt = { id:Date.now(), side, type:'correction', hAfter:s.home, aAfter:s.away, setNum:s.num, undone:false }
+    S.events.push(evt)
+    enqueue({
+      scoring_side: side,
+      home_score_after: s.home,
+      away_score_after: s.away,
+      point_type: 'point',
+      set_num: s.num,
+      recorded_at: new Date().toISOString(),
+      is_correction: true
+    })
+    
+    renderAll()
+    syncMatchState()
+  }
+}
+
+/* ── Undo ─────────────────────────────────────────────── */
+function undoLast(){
+  if(S.matchDone){
+    S.matchDone = false
+    document.getElementById('match-over').classList.remove('show')
+    if (window.firebaseConfigured) {
+      window.updateDocFirebaseDB(window.docFirebaseDB(window.db, 'matches', URL_MATCH_ID), {
+        status: 'live',
+        score: null
+      });
+    }
+  }
+
+  const last = [...S.events].reverse().find(e=>!e.undone)
+  if(!last) return
+  last.undone = true
+
+  const s = S.sets[last.setNum - 1]
+  
+  if(s.status === 'finished'){
+    s.status = 'active'
+    if(s.winner){
+      S.setsWon[s.winner]--
+      s.winner = null
+    }
+    S.cur = last.setNum - 1
+    // Reset any future sets that might have been activated
+    for(let i=S.cur+1; i<5; i++){
+      S.sets[i].home = 0
+      S.sets[i].away = 0
+      S.sets[i].status = 'pending'
+      S.sets[i].winner = null
+    }
+  } else if (s.status === 'ending') {
+    s.status = 'active'
+  }
+
+  if(last.side==='home') s.home = Math.max(0, s.home-1)
+  else                   s.away = Math.max(0, s.away-1)
+  
+  if (window.firebaseConfigured) {
+    window.updateDocFirebaseDB(window.docFirebaseDB(window.db, 'events', last.id), { undone: true });
+  }
+
+  renderAll()
+  showToast(t('undone'))
+  syncMatchState()
+}
+
+/* ── End Set ──────────────────────────────────────────── */
+function endSet(){
+  const s = activeSet()
+  if(s.status !== 'active' && s.status !== 'ending') return
+  s.status = 'finished'
+  s.winner = s.home >= s.away ? 'home' : 'away'
+  S.setsWon[s.winner]++
+  if(S.setsWon.home===3 || S.setsWon.away===3){
+    S.matchDone = true; 
+    const finalScore = `${S.setsWon.home} - ${S.setsWon.away}`;
+    if (window.firebaseConfigured) {
+      window.updateDocFirebaseDB(window.docFirebaseDB(window.db, 'matches', URL_MATCH_ID), {
+        status: 'finished',
+        score: finalScore,
+        homeSets: S.setsWon.home,
+        awaySets: S.setsWon.away,
+        dateFinished: new Date().toISOString()
+      });
+    }
+    renderAll(); showMatchOver(); return
+  }
+  if(S.cur < 4){ S.cur++; S.sets[S.cur].status = 'active' }
+  renderAll()
+  showToast(t('setEnded', s.num, S.sets[S.cur].num))
+  syncMatchState()
+}
+
+/* ── Match Over ───────────────────────────────────────── */
+function showMatchOver(){
+  const winner = S.setsWon.home >= S.setsWon.away ? clubName('home') : clubName('away')
+  document.getElementById('mo-title').textContent  = t('matchOver')
+  
+  const titleHtml = t('matchWon', winner, S.setsWon.home, S.setsWon.away)
+  const setsScores = S.sets.filter(s=>s.status==='finished').map(s => `${s.home}–${s.away}`).join(', ')
+  
+  document.getElementById('mo-result').innerHTML = `
+    ${titleHtml}
+    <div style="font-size:16px;color:var(--text3);font-variant-numeric:tabular-nums">${setsScores}</div>
+  `
+  document.getElementById('mo-new').textContent    = t('newMatch')
+  document.getElementById('match-over').classList.add('show')
+}
+
+function resetMatch(){
+  window.location.href = 'match-setup.html'
+}
+
+/* ── Toast ────────────────────────────────────────────── */
+function showToast(msg){
+  let toast = document.getElementById('xura-toast')
+  if(!toast){
+    toast = document.createElement('div')
+    toast.id = 'xura-toast'
+    toast.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+      background:#1e293b;color:#e2e8f0;padding:8px 18px;border-radius:20px;
+      font-size:12px;z-index:100;transition:opacity .3s;pointer-events:none`
+    document.body.appendChild(toast)
+  }
+  toast.textContent = msg; toast.style.opacity = '1'
+  clearTimeout(toast._t)
+  toast._t = setTimeout(()=>{ toast.style.opacity='0' }, 1800)
+}
+
+/* ── Keyboard ─────────────────────────────────────────── */
+document.addEventListener('keydown', e=>{
+  if(document.getElementById('overlay').classList.contains('open')){
+    if(e.key==='Escape'){ closeOverlay(); return }
+    const pt = POINT_TYPE_META.find(p=>p.shortcut===e.key)
+    if(pt) confirmType(pt.id)
+  } else {
+    if(e.key==='h'||e.key==='H') pressScore('home')
+    if(e.key==='a'||e.key==='A') pressScore('away')
+    if(e.key==='z'||e.key==='Z') undoLast()
+    if(e.key==='Enter')          endSet()
+    if(e.key==='l'||e.key==='L') toggleLang()
+  }
+})
+
+document.getElementById('overlay').addEventListener('click', closeOverlay)
+
+/* ── Init ─────────────────────────────────────────────── */
+window.initFirestoreSync = async function() {
+  // 1. Check Login
+  const savedRef = sessionStorage.getItem('xura_referee');
+  if (!savedRef) {
+    window.location.href = 'xura-referee-login.html';
+    return;
+  }
+  const loggedInRef = JSON.parse(savedRef);
+
+  if (window.firebaseConfigured) {
+    const docSnap = await window.getDocFirebaseDB(window.docFirebaseDB(window.db, 'matches', URL_MATCH_ID));
+    if (docSnap.exists()) {
+      matchData = docSnap.data();
+
+      // 2. Check Permission
+      if (matchData.assignedReferee !== loggedInRef.id) {
+        alert(LANG === 'ar' ? 'عذراً، لست الحكم المعين لهذه المباراة' : 'Access Denied: You are not the assigned referee for this match');
+        window.location.href = 'xura-referee-login.html';
+        return;
+      }
+
+      document.getElementById('ref-display').textContent = loggedInRef.name_ar;
+
+      CLUBS = {
+        home: { ...matchData.home, btnClass: 'home' },
+        away: { ...matchData.away, btnClass: 'away' }
+      };
+      
+      document.documentElement.style.setProperty('--teal', CLUBS.home.color);
+      document.documentElement.style.setProperty('--teal-bg', CLUBS.home.color + '33');
+      document.documentElement.style.setProperty('--teal-dark', CLUBS.home.color + '1a');
+      document.documentElement.style.setProperty('--blue', CLUBS.away.color);
+      document.documentElement.style.setProperty('--blue-bg', CLUBS.away.color + '33');
+      document.documentElement.style.setProperty('--blue-dark', CLUBS.away.color + '1a');
+      
+      applyDir();
+      updateOnline();
+      renderAll();
+      
+      // Heartbeat for live dashboard
+      setInterval(() => {
+        if (window.firebaseConfigured && navigator.onLine) {
+          window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'referees', URL_MATCH_ID), { lastActive: Date.now(), matchId: URL_MATCH_ID });
+        }
+      }, 5000);
+    } else {
+      window.location.href = "match-setup.html";
+    }
+  }
+}
+// Robust initialization: Wait for Firebase to be ready
+const initInterval = setInterval(() => {
+  if (window.firebaseConfigured) {
+    clearInterval(initInterval);
+    window.initFirestoreSync();
+  }
+}, 500);
+
+// Also try immediately just in case
+if (window.firebaseConfigured) {
+  clearInterval(initInterval);
+  window.initFirestoreSync();
+}
+</script>
+</body>
+</html>

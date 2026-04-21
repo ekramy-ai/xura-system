@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>XURA — تسجيل دخول المسؤول</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#020617">
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+  import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDY3k5KR2NDncsFtee7u6pXMMi1WvwYq7c",
+    authDomain: "xura-system.firebaseapp.com",
+    projectId: "xura-system",
+    storageBucket: "xura-system.firebasestorage.app",
+    messagingSenderId: "184949976586",
+    appId: "1:184949976586:web:3d70738663ec1d43f639f3"
+  };
+  window.firebaseApp = initializeApp(firebaseConfig);
+  window.db = initializeFirestore(window.firebaseApp, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})});
+  window.docFB = doc;
+  window.getDocFB = getDoc;
+  window.setDocFB = setDoc;
+  window.firebaseReady = true;
+  if (typeof window.onFirebaseReady === 'function') window.onFirebaseReady();
+</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#020617;--surface:rgba(15,23,42,0.7);--surface2:rgba(30,41,59,0.6);
+    --border:rgba(51,65,85,0.4);--teal:#14b8a6;--teal-bg:#134e4a;
+    --text:#f8fafc;--text2:#94a3b8;--danger:#ef4444;--green:#4ade80;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden}
+  .glow{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+  .glow-1{width:500px;height:500px;top:-200px;right:-100px;background:radial-gradient(circle,rgba(20,184,166,0.12),transparent 70%)}
+  .glow-2{width:400px;height:400px;bottom:-150px;left:-100px;background:radial-gradient(circle,rgba(59,130,246,0.1),transparent 70%)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:40px 32px;
+    width:100%;max-width:380px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    box-shadow:0 24px 64px rgba(0,0,0,0.5);text-align:center;position:relative;z-index:1}
+  .brand{margin-bottom:28px}
+  .brand-icon{font-size:44px;margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(20,184,166,0.3))}
+  .brand h1{font-size:32px;font-weight:900;letter-spacing:3px;
+    background:linear-gradient(135deg,var(--teal),#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .brand p{font-size:14px;color:var(--text2);margin-top:6px}
+  .pin-display{display:flex;gap:16px;justify-content:center;margin-bottom:28px}
+  .pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);transition:all .25s}
+  .pin-dot.filled{background:var(--teal);border-color:var(--teal);box-shadow:0 0 14px rgba(20,184,166,0.4)}
+  .pin-dot.error{background:var(--danger);border-color:var(--danger);animation:shake .4s}
+  .pin-dot.success{background:var(--green);border-color:var(--green);box-shadow:0 0 14px rgba(74,222,128,0.4)}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:270px;margin:0 auto}
+  .key{height:62px;border-radius:16px;border:1px solid var(--border);background:rgba(15,23,42,0.5);
+    color:var(--text);font-size:24px;font-weight:600;cursor:pointer;transition:all .12s;
+    display:flex;align-items:center;justify-content:center;font-family:inherit;user-select:none}
+  .key:active{transform:scale(.9);background:var(--teal-bg);border-color:var(--teal)}
+  .key.fn{font-size:20px;color:var(--text2)}
+  .key.fn.enter{color:var(--teal);border-color:rgba(20,184,166,0.3)}
+  .status{font-size:13px;margin-top:18px;min-height:20px;transition:color .3s}
+  .status.error{color:var(--danger)}.status.success{color:var(--green)}
+  .loading{display:inline-block;width:16px;height:16px;border:2px solid var(--text2);
+    border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="card">
+  <div class="brand">
+    <div class="brand-icon">🛡️</div>
+    <h1>XURA</h1>
+    <p>تسجيل دخول المسؤول</p>
+  </div>
+  <div class="pin-display" id="pin-display">
+    <div class="pin-dot" id="dot-0"></div>
+    <div class="pin-dot" id="dot-1"></div>
+    <div class="pin-dot" id="dot-2"></div>
+    <div class="pin-dot" id="dot-3"></div>
+  </div>
+  <div class="keypad">
+    <button class="key" onclick="pressKey('1')">1</button>
+    <button class="key" onclick="pressKey('2')">2</button>
+    <button class="key" onclick="pressKey('3')">3</button>
+    <button class="key" onclick="pressKey('4')">4</button>
+    <button class="key" onclick="pressKey('5')">5</button>
+    <button class="key" onclick="pressKey('6')">6</button>
+    <button class="key" onclick="pressKey('7')">7</button>
+    <button class="key" onclick="pressKey('8')">8</button>
+    <button class="key" onclick="pressKey('9')">9</button>
+    <button class="key fn" onclick="clearPin()">⌫</button>
+    <button class="key" onclick="pressKey('0')">0</button>
+    <button class="key fn enter" onclick="submitPin()">✓</button>
+  </div>
+  <div class="status" id="status"></div>
+</div>
+<script>
+let pin = '';
+let submitting = false;
+const redirectPage = new URLSearchParams(window.location.search).get('redirect') || 'match-setup.html';
+
+// If already logged in, redirect immediately
+if (sessionStorage.getItem('xura_admin')) {
+  window.location.href = redirectPage;
+}
+
+function pressKey(n) {
+  if (pin.length >= 4 || submitting) return;
+  pin += n;
+  updateDots();
+  if (pin.length === 4) setTimeout(submitPin, 250);
+}
+
+function clearPin() {
+  if (submitting) return;
+  if (pin.length > 0) { pin = pin.slice(0, -1); updateDots(); }
+}
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('dot-' + i);
+    d.className = 'pin-dot' + (i < pin.length ? ' filled' : '');
+  }
+  document.getElementById('status').textContent = '';
+  document.getElementById('status').className = 'status';
+}
+
+async function submitPin() {
+  if (pin.length !== 4 || submitting) return;
+  submitting = true;
+  const status = document.getElementById('status');
+
+  if (!window.firebaseReady) {
+    status.innerHTML = '<span class="loading"></span> جاري الاتصال...';
+    setTimeout(()=>{ submitting=false; submitPin(); }, 500);
+    return;
+  }
+
+  try {
+    const docRef = window.docFB(window.db, 'config', 'admin');
+    const snap = await window.getDocFB(docRef);
+    let adminPin = '0000';
+    if (snap.exists()) {
+      adminPin = snap.data().pin;
+    } else {
+      await window.setDocFB(docRef, { pin: '0000', createdAt: new Date().toISOString() });
+    }
+
+    if (pin === adminPin) {
+      status.textContent = '✓ تم التحقق';
+      status.className = 'status success';
+      document.querySelectorAll('.pin-dot').forEach(d => { d.className = 'pin-dot success'; });
+      sessionStorage.setItem('xura_admin', JSON.stringify({ loginTime: Date.now() }));
+      setTimeout(() => { window.location.href = redirectPage; }, 600);
+    } else {
+      status.textContent = 'رمز الدخول غير صحيح';
+      status.className = 'status error';
+      document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
+      setTimeout(() => { pin = ''; submitting = false; updateDots(); }, 800);
+    }
+  } catch (err) {
+    status.textContent = 'خطأ في الاتصال';
+    status.className = 'status error';
+    pin = ''; submitting = false; updateDots();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+  if (e.key === 'Backspace') clearPin();
+  if (e.key === 'Enter') submitPin();
+});
+</script>
+</body>
+</html>

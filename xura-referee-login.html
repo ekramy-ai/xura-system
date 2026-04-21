@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>XURA — تسجيل دخول الحكم</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#020617">
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+  import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+    collection, doc, getDoc, setDoc, query, where, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDY3k5KR2NDncsFtee7u6pXMMi1WvwYq7c",
+    authDomain: "xura-system.firebaseapp.com",
+    projectId: "xura-system",
+    storageBucket: "xura-system.firebasestorage.app",
+    messagingSenderId: "184949976586",
+    appId: "1:184949976586:web:3d70738663ec1d43f639f3"
+  };
+  window.firebaseApp = initializeApp(firebaseConfig);
+  window.db = initializeFirestore(window.firebaseApp, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})});
+  window.docFB = doc;
+  window.getDocFB = getDoc;
+  window.setDocFB = setDoc;
+  window.getDocsFB = getDocs;
+  window.collectionFB = collection;
+  window.queryFB = query;
+  window.whereFB = where;
+  window.onSnapshotFB = onSnapshot;
+  window.firebaseReady = true;
+  if (typeof window.onFirebaseReady === 'function') window.onFirebaseReady();
+</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#020617;--surface:rgba(15,23,42,0.7);--surface2:rgba(30,41,59,0.6);
+    --border:rgba(51,65,85,0.4);--border2:rgba(51,65,85,0.7);
+    --teal:#14b8a6;--teal-bg:#134e4a;--blue:#3b82f6;
+    --text:#f8fafc;--text2:#94a3b8;--text3:#475569;
+    --danger:#ef4444;--green:#4ade80;--amber:#f59e0b;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-x:hidden}
+  .glow{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+  .glow-1{width:500px;height:500px;top:-200px;right:-100px;background:radial-gradient(circle,rgba(20,184,166,0.12),transparent 70%)}
+  .glow-2{width:400px;height:400px;bottom:-150px;left:-100px;background:radial-gradient(circle,rgba(59,130,246,0.1),transparent 70%)}
+
+  .container{width:100%;max-width:440px;position:relative;z-index:1}
+
+  /* Login Card */
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px 28px;
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 20px 48px rgba(0,0,0,0.5);
+    margin-bottom:20px;text-align:center}
+  .brand{margin-bottom:24px}
+  .brand-icon{font-size:40px;margin-bottom:6px}
+  .brand h1{font-size:28px;font-weight:900;letter-spacing:2px;
+    background:linear-gradient(135deg,var(--teal),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .brand p{font-size:13px;color:var(--text2);margin-top:4px}
+
+  .form-group{margin-bottom:16px;text-align:right}
+  .form-group label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600;letter-spacing:.03em}
+  .select-wrap{position:relative}
+  .select-wrap::after{content:'▾';position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);pointer-events:none}
+  select{width:100%;background:rgba(2,6,23,0.8);border:1px solid var(--border);color:#fff;
+    padding:14px 16px;border-radius:12px;font-size:14px;appearance:none;outline:none;
+    transition:border-color .2s;cursor:pointer;font-family:inherit}
+  select:focus{border-color:var(--teal)}
+  select:disabled{opacity:.5;cursor:not-allowed}
+
+  .pin-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+  .pin-label{font-size:12px;color:var(--text2);margin-bottom:12px;font-weight:600}
+  .pin-display{display:flex;gap:14px;justify-content:center;margin-bottom:20px}
+  .pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);transition:all .25s}
+  .pin-dot.filled{background:var(--teal);border-color:var(--teal);box-shadow:0 0 12px rgba(20,184,166,0.4)}
+  .pin-dot.error{background:var(--danger);border-color:var(--danger);animation:shake .4s}
+  .pin-dot.success{background:var(--green);border-color:var(--green)}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;margin:0 auto}
+  .key{height:54px;border-radius:14px;border:1px solid var(--border);background:rgba(15,23,42,0.5);
+    color:var(--text);font-size:22px;font-weight:600;cursor:pointer;transition:all .12s;
+    display:flex;align-items:center;justify-content:center;font-family:inherit;user-select:none}
+  .key:active{transform:scale(.9);background:var(--teal-bg);border-color:var(--teal)}
+  .key.fn{font-size:18px;color:var(--text2)}
+  .key.fn.enter{color:var(--teal);border-color:rgba(20,184,166,0.3)}
+
+  .status{font-size:13px;margin-top:14px;min-height:20px}
+  .status.error{color:var(--danger)}.status.success{color:var(--green)}
+  .loading{display:inline-block;width:14px;height:14px;border:2px solid var(--text2);
+    border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Matches Section */
+  .matches-section{display:none}
+  .matches-section.show{display:block}
+  .section-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .section-title .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .match-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+    margin-bottom:12px;transition:all .2s;cursor:pointer;backdrop-filter:blur(20px)}
+  .match-card:hover{border-color:var(--teal);transform:translateY(-2px)}
+  .match-card:active{transform:scale(.98)}
+  .match-card.live{border-right:3px solid var(--green)}
+  .match-card.scheduled{border-right:3px solid var(--amber)}
+
+  .mc-header{padding:10px 16px;background:rgba(10,21,53,0.6);display:flex;align-items:center;justify-content:space-between}
+  .mc-tournament{font-size:11px;color:var(--text3);font-weight:500}
+  .mc-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700}
+  .mc-badge.live{background:rgba(74,222,128,0.15);color:var(--green)}
+  .mc-badge.scheduled{background:rgba(245,158,11,0.15);color:var(--amber)}
+
+  .mc-body{padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .mc-team{text-align:center;flex:1}
+  .mc-team-name{font-size:14px;font-weight:700;margin-bottom:4px}
+  .mc-vs{font-size:12px;color:var(--text3);font-weight:700}
+
+  .mc-action{padding:10px 16px;background:rgba(20,184,166,0.08);border-top:1px solid var(--border);
+    text-align:center;font-size:13px;color:var(--teal);font-weight:600}
+
+  .no-matches{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px}
+  .no-matches .icon{font-size:40px;margin-bottom:10px;opacity:.3}
+
+  .referee-info{display:flex;align-items:center;gap:10px;padding:14px;background:rgba(20,184,166,0.08);
+    border:1px solid rgba(20,184,166,0.2);border-radius:12px;margin-bottom:16px}
+  .referee-avatar{width:40px;height:40px;border-radius:50%;background:var(--teal-bg);
+    display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--teal)}
+  .referee-name{font-size:15px;font-weight:700}
+  .referee-sub{font-size:11px;color:var(--text2)}
+  .logout-btn{margin-right:auto;padding:6px 12px;border-radius:8px;border:1px solid var(--border);
+    background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;transition:.2s}
+  .logout-btn:hover{border-color:var(--danger);color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<div class="container">
+  <!-- Login Card -->
+  <div class="login-card" id="login-card">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <h1>XURA</h1>
+      <p>تسجيل دخول الحكم</p>
+    </div>
+
+    <div class="form-group">
+      <label>اختر الحكم</label>
+      <div class="select-wrap">
+        <select id="referee-select" onchange="onRefereeSelected()">
+          <option value="">— جاري التحميل —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pin-section" id="pin-section" style="display:none">
+      <div class="pin-label">أدخل رمز الدخول (PIN)</div>
+      <div class="pin-display">
+        <div class="pin-dot" id="dot-0"></div>
+        <div class="pin-dot" id="dot-1"></div>
+        <div class="pin-dot" id="dot-2"></div>
+        <div class="pin-dot" id="dot-3"></div>
+      </div>
+      <div class="keypad">
+        <button class="key" onclick="pressKey('1')">1</button>
+        <button class="key" onclick="pressKey('2')">2</button>
+        <button class="key" onclick="pressKey('3')">3</button>
+        <button class="key" onclick="pressKey('4')">4</button>
+        <button class="key" onclick="pressKey('5')">5</button>
+        <button class="key" onclick="pressKey('6')">6</button>
+        <button class="key" onclick="pressKey('7')">7</button>
+        <button class="key" onclick="pressKey('8')">8</button>
+        <button class="key" onclick="pressKey('9')">9</button>
+        <button class="key fn" onclick="clearPin()">⌫</button>
+        <button class="key" onclick="pressKey('0')">0</button>
+        <button class="key fn enter" onclick="submitPin()">✓</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+  <!-- Matches Section (shown after login) -->
+  <div class="matches-section" id="matches-section">
+    <div class="referee-info" id="referee-info">
+      <div class="referee-avatar" id="ref-avatar">أ</div>
+      <div>
+        <div class="referee-name" id="ref-name"></div>
+        <div class="referee-sub">حكم معتمد</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+    </div>
+
+    <div class="section-title">
+      <span class="dot"></span>
+      المباريات المتاحة
+    </div>
+    <div id="matches-list">
+      <div class="no-matches">
+        <div class="icon">📋</div>
+        <p>جاري تحميل المباريات...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let pin = '';
+let submitting = false;
+let refereesData = [];
+let currentReferee = null;
+
+// Check if already logged in
+const savedRef = sessionStorage.getItem('xura_referee');
+if (savedRef) {
+  try {
+    currentReferee = JSON.parse(savedRef);
+    showMatchesView();
+  } catch(e) { sessionStorage.removeItem('xura_referee'); }
+}
+
+// Load referees when Firebase is ready
+window.onFirebaseReady = function() { loadReferees(); };
+if (window.firebaseReady) loadReferees();
+
+async function loadReferees() {
+  try {
+    const snap = await window.getDocsFB(window.collectionFB(window.db, 'referee_users'));
+    refereesData = [];
+    snap.forEach(d => refereesData.push({ id: d.id, ...d.data() }));
+
+    const sel = document.getElementById('referee-select');
+    sel.innerHTML = '<option value="">— اختر الحكم —</option>';
+    refereesData.forEach(r => {
+      sel.innerHTML += `<option value="${r.id}">${r.name_ar} / ${r.name_en || r.name_ar}</option>`;
+    });
+
+    if (refereesData.length === 0) {
+      sel.innerHTML = '<option value="">لا يوجد حكام مسجلين</option>';
+    }
+  } catch(e) {
+    console.error('Error loading referees:', e);
+  }
+}
+
+function onRefereeSelected() {
+  const sel = document.getElementById('referee-select');
+  const pinSection = document.getElementById('pin-section');
+  if (sel.value) {
+    pinSection.style.display = 'block';
+    pin = ''; updateDots();
+  } else {
+    pinSection.style.display = 'none';
+  }
+}
+
+function pressKey(n) {
+  if (pin.length >= 4 || submitting) return;
+  pin += n;
+  updateDots();
+  if (pin.length === 4) setTimeout(submitPin, 250);
+}
+
+function clearPin() {
+  if (submitting) return;
+  if (pin.length > 0) { pin = pin.slice(0, -1); updateDots(); }
+}
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('dot-' + i);
+    d.className = 'pin-dot' + (i < pin.length ? ' filled' : '');
+  }
+  const s = document.getElementById('status');
+  s.textContent = '';
+  s.className = 'status';
+}
+
+async function submitPin() {
+  if (pin.length !== 4 || submitting) return;
+  submitting = true;
+  const status = document.getElementById('status');
+  const selId = document.getElementById('referee-select').value;
+  if (!selId) { status.textContent = 'اختر الحكم أولاً'; status.className = 'status error'; submitting = false; return; }
+
+  const referee = refereesData.find(r => r.id === selId);
+  if (!referee) { status.textContent = 'خطأ — أعد المحاولة'; status.className = 'status error'; submitting = false; return; }
+
+  if (pin === referee.pin) {
+    status.textContent = '✓ تم التحقق';
+    status.className = 'status success';
+    document.querySelectorAll('.pin-dot').forEach(d => { d.className = 'pin-dot success'; });
+    currentReferee = { id: referee.id, name_ar: referee.name_ar, name_en: referee.name_en };
+    sessionStorage.setItem('xura_referee', JSON.stringify(currentReferee));
+    setTimeout(() => showMatchesView(), 600);
+  } else {
+    status.textContent = 'رمز الدخول غير صحيح';
+    status.className = 'status error';
+    document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
+    setTimeout(() => { pin = ''; submitting = false; updateDots(); }, 800);
+  }
+}
+
+function showMatchesView() {
+  document.getElementById('login-card').style.display = 'none';
+  const sec = document.getElementById('matches-section');
+  sec.classList.add('show');
+
+  document.getElementById('ref-name').textContent = currentReferee.name_ar;
+  document.getElementById('ref-avatar').textContent = currentReferee.name_ar.charAt(0);
+
+  loadAssignedMatches();
+}
+
+async function loadAssignedMatches() {
+  const list = document.getElementById('matches-list');
+
+  if (!window.firebaseReady) {
+    setTimeout(loadAssignedMatches, 500);
+    return;
+  }
+
+  try {
+    // Listen for matches assigned to this referee
+    const q = window.queryFB(
+      window.collectionFB(window.db, 'matches'),
+      window.whereFB('assignedReferee', '==', currentReferee.id)
+    );
+
+    window.onSnapshotFB(q, (snap) => {
+      const matches = [];
+      snap.forEach(d => matches.push({ id: d.id, ...d.data() }));
+
+      // Sort: live first, then by creation
+      matches.sort((a, b) => {
+        if (a.status === 'live' && b.status !== 'live') return -1;
+        if (b.status === 'live' && a.status !== 'live') return 1;
+        return 0;
+      });
+
+      // Filter to show only live and non-finished
+      const active = matches.filter(m => m.status !== 'finished');
+      const finished = matches.filter(m => m.status === 'finished');
+
+      if (active.length === 0 && finished.length === 0) {
+        list.innerHTML = `<div class="no-matches">
+          <div class="icon">📋</div>
+          <p>لا توجد مباريات معينة لك حالياً</p>
+          <p style="font-size:12px;margin-top:8px;color:var(--text3)">تواصل مع المسؤول لتعيين مباراة</p>
+        </div>`;
+        return;
+      }
+
+      let html = '';
+      active.forEach(m => {
+        const hName = m.home?.name_ar || 'Home';
+        const aName = m.away?.name_ar || 'Away';
+        const isLive = m.status === 'live';
+        const badge = isLive ? '<span class="mc-badge live">● مباشر</span>' : '<span class="mc-badge scheduled">جاهزة</span>';
+        const tour = m.tournament || m.ageGroup || '';
+
+        html += `<div class="match-card ${isLive ? 'live' : 'scheduled'}" onclick="enterMatch('${m.id}')">
+          <div class="mc-header">
+            <span class="mc-tournament">${tour}</span>
+            ${badge}
+          </div>
+          <div class="mc-body">
+            <div class="mc-team">
+              <div class="mc-team-name" style="color:${m.home?.color || 'var(--teal)'}">${hName}</div>
+            </div>
+            <div class="mc-vs">VS</div>
+            <div class="mc-team">
+              <div class="mc-team-name" style="color:${m.away?.color || 'var(--blue)'}">${aName}</div>
+            </div>
+          </div>
+          <div class="mc-action">دخول المباراة ←</div>
+        </div>`;
+      });
+
+      if (finished.length > 0) {
+        html += '<div style="font-size:12px;color:var(--text3);margin:16px 0 8px;font-weight:600">مباريات سابقة</div>';
+        finished.slice(-5).reverse().forEach(m => {
+          const hName = m.home?.name_ar || 'Home';
+          const aName = m.away?.name_ar || 'Away';
+          html += `<div class="match-card" style="opacity:.6;cursor:default;border-right:3px solid var(--text3)">
+            <div class="mc-body" style="padding:12px 16px">
+              <span style="font-size:13px">${hName}</span>
+              <span style="font-size:12px;color:var(--text3)">${m.score || '—'}</span>
+              <span style="font-size:13px">${aName}</span>
+            </div>
+          </div>`;
+        });
+      }
+
+      list.innerHTML = html;
+    });
+  } catch(e) {
+    console.error('Error loading matches:', e);
+    list.innerHTML = `<div class="no-matches"><div class="icon">⚠️</div><p>خطأ في تحميل المباريات</p></div>`;
+  }
+}
+
+function enterMatch(matchId) {
+  window.location.href = `xura-referee-v3.html?matchId=${matchId}`;
+}
+
+function logout() {
+  sessionStorage.removeItem('xura_referee');
+  currentReferee = null;
+  window.location.reload();
+}
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('pin-section').style.display === 'none') return;
+  if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+  if (e.key === 'Backspace') clearPin();
+  if (e.key === 'Enter') submitPin();
+});
+</script>
+</body>
+</html>

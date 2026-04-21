@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>XURA Match Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDY3k5KR2NDncsFtee7u6pXMMi1WvwYq7c",
+      authDomain: "xura-system.firebaseapp.com",
+      projectId: "xura-system",
+      storageBucket: "xura-system.firebasestorage.app",
+      messagingSenderId: "184949976586",
+      appId: "1:184949976586:web:3d70738663ec1d43f639f3"
+    };
+
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.db = initializeFirestore(window.firebaseApp, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})});
+    window.setDocFirebaseDB = setDoc;
+    window.deleteDocFirebaseDB = deleteDoc;
+    window.docFirebaseDB = doc;
+    window.collectionFirebaseDB = collection;
+    window.onSnapshotFirebaseDB = onSnapshot;
+    window.firebaseConfigured = true;
+  </script>
+  <style>
+    /* XURA Design System */
+    :root {
+      --bg: #020617;
+      --surface: rgba(15,23,42,0.6);
+      --surface2: rgba(30,41,59,0.8);
+      --border: rgba(51,65,85,0.4);
+      --teal: #14b8a6;
+      --teal-bg: #134e4a;
+      --blue: #3b82f6;
+      --text: #f8fafc;
+      --text2: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+    
+    /* Background effects */
+    .glow { position: fixed; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(20,184,166,0.15) 0%, rgba(0,0,0,0) 70%); top: -200px; left: -200px; z-index: -1; pointer-events: none; }
+    .glow2 { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 70%); bottom: -200px; right: -200px; z-index: -1; pointer-events: none; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 32px; width: 100%; max-width: 480px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 24px 48px rgba(0,0,0,0.5); z-index: 10; }
+    
+    .brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px; }
+    .brand svg { width: 32px; height: 32px; fill: none; stroke: var(--teal); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .brand h1 { font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #fff; }
+
+    .form-group { margin-bottom: 16px; width: 100%; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    select { width: 100%; background: rgba(2,6,23,0.8); border: 1px solid var(--border); color: #fff; padding: 14px 16px; border-radius: 12px; font-size: 15px; appearance: none; outline: none; transition: border-color 0.2s; cursor: pointer; }
+    select:focus { border-color: var(--teal); }
+    select:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: '▾'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text2); pointer-events: none; }
+    
+    .row { display: flex; gap: 16px; margin-bottom: 16px; }
+    .row .form-group { margin-bottom: 0; }
+    
+    .team-row { display: flex; gap: 16px; margin-bottom: 24px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .team-row .form-group { flex: 1; margin-bottom: 0; }
+    .vs { display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--border); padding-top: 24px; }
+
+    .btn { width: 100%; background: var(--teal); color: #020617; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+    .btn:active { transform: scale(0.98); }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
+    .error { color: #ef4444; font-size: 13px; margin-top: -10px; margin-bottom: 16px; text-align: center; display: none; }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="glow2"></div>
+
+  <div class="card">
+    <div class="brand">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8 11l3 3 5-5"/></svg>
+      <h1>XURA</h1>
+    </div>
+
+    <!-- Tournament Selection -->
+    <div class="form-group">
+      <label>Tournament / البطولة</label>
+      <div class="select-wrap">
+        <select id="tournament" onchange="updateGenders()"></select>
+      </div>
+    </div>
+
+    <!-- Category (Gender + Age) Selection -->
+    <div class="row">
+      <div class="form-group" style="flex: 1;">
+        <label>Gender / النوع</label>
+        <div class="select-wrap">
+          <select id="gender" onchange="updateAgeGroups()"></select>
+        </div>
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Age Group / المرحلة</label>
+        <div class="select-wrap">
+          <select id="ageGroup" onchange="updateTeams()"></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teams Selection -->
+    <div class="team-row">
+      <div class="form-group">
+        <label>Home Team</label>
+        <div class="select-wrap">
+          <select id="teamHome" onchange="validateTeams()"></select>
+        </div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="form-group">
+        <label>Away Team</label>
+        <div class="select-wrap">
+          <select id="teamAway" onchange="validateTeams()"></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referee Assignment -->
+    <div class="form-group" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+      <label>Assigned Referee / الحكم المعين</label>
+      <div class="select-wrap">
+        <select id="assignedReferee">
+          <option value="">— Loading Referees —</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="error-msg" class="error">Please select two different teams.</div>
+
+    <div style="display:flex; gap:12px; margin-top:24px">
+      <button class="btn" style="background:var(--surface2); color:var(--text2); flex:1" onclick="window.location.href='xura-db-manager.html'">DB Manager</button>
+      <button class="btn" id="start-btn" style="flex:2" onclick="startMatch()">Start Match</button>
+    </div>
+  </div>
+
+  <script>
+    // Default Database Structure
+    const defaultDB = {
+      tournaments: [
+        {
+          id: "champ_2026",
+          name: "بطولة الجمهورية 2026",
+          categories: [
+            {
+              id: "boys_u18",
+              gender: "boys",
+              gender_ar: "بنين",
+              ageGroup: "U18",
+              teams: [
+                { id: "zamalek", name_ar: "الزمالك", name_en: "Zamalek", color: "#14b8a6" },
+                { id: "alahly", name_ar: "الأهلي", name_en: "Al Ahly", color: "#3b82f6" },
+                { id: "smouha", name_ar: "سموحة", name_en: "Smouha", color: "#0ea5e9" }
+              ]
+            },
+            {
+              id: "girls_senior",
+              gender: "girls",
+              gender_ar: "بنات",
+              ageGroup: "Senior",
+              teams: [
+                { id: "sporting", name_ar: "سبورتنج", name_en: "Sporting", color: "#22c55e" },
+                { id: "ahly_g", name_ar: "الأهلي", name_en: "Al Ahly", color: "#ef4444" },
+                { id: "shams", name_ar: "الشمس", name_en: "El Shams", color: "#f59e0b" }
+              ]
+            }
+          ]
+        },
+        {
+          id: "cup_2026",
+          name: "كأس مصر 2026",
+          categories: [
+            {
+              id: "boys_senior",
+              gender: "boys",
+              gender_ar: "بنين",
+              ageGroup: "Senior",
+              teams: [
+                { id: "zamalek", name_ar: "الزمالك", name_en: "Zamalek", color: "#14b8a6" },
+                { id: "union", name_ar: "الاتحاد", name_en: "Union", color: "#22c55e" },
+                { id: "army", name_ar: "الجيش", name_en: "Army", color: "#ef4444" }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    let DB = defaultDB;
+
+    function init() {
+      // Admin auth guard
+      if (!sessionStorage.getItem('xura_admin')) {
+        window.location.href = 'xura-admin-login.html?redirect=match-setup.html';
+      }
+
+      if (window.firebaseConfigured) {
+        // Load Referees
+        window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'referee_users'), (snap) => {
+          const refSelect = document.getElementById('assignedReferee');
+          refSelect.innerHTML = '';
+          if (snap.empty) {
+            refSelect.add(new Option('No referees found', ''));
+          } else {
+            snap.forEach(doc => {
+              const r = doc.data();
+              refSelect.add(new Option(r.name_ar + ' / ' + r.name_en, doc.id));
+            });
+          }
+        });
+
+        window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'tournaments'), (tSnap) => {
+          window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'categories'), (cSnap) => {
+            window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'teams'), (tmSnap) => {
+              let newDB = { tournaments: [] };
+              tSnap.forEach(tDoc => {
+                newDB.tournaments.push({ id: tDoc.id, name: tDoc.data().name, categories: [] });
+              });
+              cSnap.forEach(cDoc => {
+                const c = cDoc.data();
+                const tour = newDB.tournaments.find(x => x.id === c.tournamentId);
+                if (tour) tour.categories.push({ id: cDoc.id, gender: c.gender, gender_ar: c.gender_ar, ageGroup: c.ageGroup, teams: [] });
+              });
+              tmSnap.forEach(tmDoc => {
+                const tm = tmDoc.data();
+                newDB.tournaments.forEach(tour => {
+                  const cat = tour.categories.find(x => x.id === tm.categoryId);
+                  if (cat) cat.teams.push({ id: tmDoc.id, name_ar: tm.name_ar, name_en: tm.name_en, color: tm.color });
+                });
+              });
+              
+              if(newDB.tournaments.length > 0) {
+                DB = newDB;
+                populateTournaments();
+              }
+            });
+          });
+        });
+      }
+      populateTournaments();
+    }
+
+    function populateTournaments() {
+      // Populate Tournaments
+      const tourSelect = document.getElementById('tournament');
+      tourSelect.innerHTML = '';
+      if(DB.tournaments && DB.tournaments.length > 0) {
+        DB.tournaments.forEach(tour => {
+          tourSelect.add(new Option(tour.name, tour.id));
+        });
+        updateGenders();
+      } else {
+        tourSelect.add(new Option('No Tournaments Found', ''));
+        disableAll();
+      }
+    }
+
+    function disableAll() {
+      document.getElementById('gender').disabled = true;
+      document.getElementById('ageGroup').disabled = true;
+      document.getElementById('teamHome').disabled = true;
+      document.getElementById('teamAway').disabled = true;
+      document.getElementById('start-btn').disabled = true;
+    }
+
+    function getCurrentTournament() {
+      const tourId = document.getElementById('tournament').value;
+      return DB.tournaments.find(t => t.id === tourId);
+    }
+
+    function updateGenders() {
+      const tour = getCurrentTournament();
+      const genderSelect = document.getElementById('gender');
+      genderSelect.innerHTML = '';
+      genderSelect.disabled = false;
+
+      if (!tour || !tour.categories || tour.categories.length === 0) {
+        genderSelect.add(new Option('N/A', ''));
+        genderSelect.disabled = true;
+        updateAgeGroups();
+        return;
+      }
+
+      // Extract unique genders from categories
+      const uniqueGenders = [];
+      const genderMap = new Map();
+      
+      tour.categories.forEach(cat => {
+        if (!genderMap.has(cat.gender)) {
+          genderMap.set(cat.gender, true);
+          uniqueGenders.push({ id: cat.gender, name: cat.gender_ar });
+        }
+      });
+
+      uniqueGenders.forEach(g => {
+        genderSelect.add(new Option(g.name + ' (' + g.id + ')', g.id));
+      });
+
+      updateAgeGroups();
+    }
+
+    function updateAgeGroups() {
+      const tour = getCurrentTournament();
+      const selectedGender = document.getElementById('gender').value;
+      const ageSelect = document.getElementById('ageGroup');
+      ageSelect.innerHTML = '';
+      ageSelect.disabled = false;
+
+      if (!tour) return;
+
+      // Filter categories by selected gender
+      const availableCats = tour.categories.filter(cat => cat.gender === selectedGender);
+      
+      if (availableCats.length === 0) {
+        ageSelect.add(new Option('N/A', ''));
+        ageSelect.disabled = true;
+        updateTeams();
+        return;
+      }
+
+      availableCats.forEach(cat => {
+        ageSelect.add(new Option(cat.ageGroup, cat.id)); // Using category ID as the value
+      });
+
+      updateTeams();
+    }
+
+    function updateTeams() {
+      const tour = getCurrentTournament();
+      const categoryId = document.getElementById('ageGroup').value;
+      const homeSelect = document.getElementById('teamHome');
+      const awaySelect = document.getElementById('teamAway');
+      
+      const currentHome = homeSelect.value;
+      const currentAway = awaySelect.value;
+      
+      homeSelect.innerHTML = '';
+      awaySelect.innerHTML = '';
+      homeSelect.disabled = false;
+      awaySelect.disabled = false;
+
+      if (!tour) return;
+      
+      const category = tour.categories.find(c => c.id === categoryId);
+
+      if (!category || !category.teams || category.teams.length < 2) {
+        homeSelect.add(new Option('Not enough teams', ''));
+        awaySelect.add(new Option('Not enough teams', ''));
+        homeSelect.disabled = true;
+        awaySelect.disabled = true;
+        validateTeams();
+        return;
+      }
+
+      category.teams.forEach(team => {
+        homeSelect.add(new Option(team.name_ar + ' / ' + team.name_en, team.id));
+        awaySelect.add(new Option(team.name_ar + ' / ' + team.name_en, team.id));
+      });
+
+      // Default selections
+      homeSelect.selectedIndex = 0;
+      awaySelect.selectedIndex = 1;
+
+      // Keep previous selection if still exists
+      if (currentHome && category.teams.find(t => t.id === currentHome)) homeSelect.value = currentHome;
+      if (currentAway && category.teams.find(t => t.id === currentAway) && currentAway !== homeSelect.value) awaySelect.value = currentAway;
+
+      validateTeams();
+    }
+
+    function validateTeams() {
+      const home = document.getElementById('teamHome').value;
+      const away = document.getElementById('teamAway').value;
+      const error = document.getElementById('error-msg');
+      const btn = document.getElementById('start-btn');
+      
+      const isInvalid = !home || !away || (home === away);
+
+      if (isInvalid) {
+        if(home && away && home === away) {
+            error.style.display = 'block';
+        } else {
+            error.style.display = 'none';
+        }
+        btn.disabled = true;
+      } else {
+        error.style.display = 'none';
+        btn.disabled = false;
+      }
+    }
+
+    async function startMatch() {
+      const tourId = document.getElementById('tournament').value;
+      const categoryId = document.getElementById('ageGroup').value;
+      const homeId = document.getElementById('teamHome').value;
+      const awayId = document.getElementById('teamAway').value;
+
+      if (homeId === awayId) return;
+
+      const tour = DB.tournaments.find(t => t.id === tourId);
+      const category = tour.categories.find(c => c.id === categoryId);
+      
+      const homeTeam = category.teams.find(t => t.id === homeId);
+      const awayTeam = category.teams.find(t => t.id === awayId);
+      const refId = document.getElementById('assignedReferee').value;
+      const refName = document.getElementById('assignedReferee').options[document.getElementById('assignedReferee').selectedIndex]?.text || '';
+
+      if (!refId) return alert('Please assign a referee / يرجى اختيار حكم');
+
+      const matchId = 'match_' + Date.now();
+      const matchData = {
+        id: matchId,
+        status: 'live',
+        tournament: tour.name,
+        gender: category.gender_ar,
+        ageGroup: category.ageGroup,
+        home: { id: homeTeam.id, name_ar: homeTeam.name_ar, name_en: homeTeam.name_en, color: homeTeam.color },
+        away: { id: awayTeam.id, name_ar: awayTeam.name_ar, name_en: awayTeam.name_en, color: awayTeam.color },
+        assignedReferee: refId,
+        refereeName: refName
+      };
+
+      if (window.firebaseConfigured) {
+        await window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'matches', matchId), matchData);
+      }
+
+      // Redirect to referee app
+      window.location.href = `xura-referee-v3.html?matchId=${matchId}`;
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
