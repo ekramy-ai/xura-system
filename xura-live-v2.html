@@ -1070,32 +1070,33 @@
       }
     }
 
-    @media(max-width:640px) {
-      #main {
-        padding: 16px 12px
-      }
+    /* ── Responsive & Device Optimization ────────────────────── */
+    @media (min-width: 1024px) {
+      .grid-2 { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px; }
+      #dash-cols { display: grid; grid-template-columns: 1fr 340px !important; gap: 24px; align-items: start; }
+      .detail-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+    }
 
-      .dh-score {
-        font-size: 72px
-      }
+    @media (max-width: 768px) {
+      .nav-tabs { overflow-x: auto; justify-content: flex-start; padding-bottom: 4px; scrollbar-width: none; }
+      .nav-tabs::-webkit-scrollbar { display: none; }
+      .nav-tab { white-space: nowrap; flex-shrink: 0; }
+      .dh-score { font-size: 64px; }
+      .mc-score { font-size: 36px; }
+    }
 
-      .grid-2 {
-        grid-template-columns: 1fr
-      }
+    @media (max-width: 480px) {
+      #main { padding: 12px 10px; }
+      .card { padding: 16px; }
+      .nav-logo { font-size: 16px; }
+      .status-tag { font-size: 10px; padding: 2px 8px; }
+    }
 
-      .nav-tab {
-        padding: 7px 8px;
-        font-size: 11px
-      }
-
-      #lang-toggle {
-        font-size: 10px;
-        padding: 3px 7px
-      }
-
-      #dash-cols {
-        grid-template-columns: 1fr !important
-      }
+    /* Print styles */
+    @media print {
+      #topnav, .nav-tabs, #admin-tabs { display: none !important; }
+      #main { padding: 0; }
+      .card { border: 1px solid #000; break-inside: avoid; }
     }
   </style>
 
@@ -1218,33 +1219,38 @@
         </div>
 
         <!-- Main content (always in DOM, visibility controlled) -->
-        <div id="detail-content" style="display:none">
-          <div class="detail-hero">
-            <div class="dh-bar">
-              <span class="dh-tournament" id="d-tournament"></span>
-              <span id="d-status-badge" style="font-size:11px;font-weight:600"></span>
-            </div>
-            <div class="dh-score-block">
-              <div class="dh-team">
-                <div class="dh-team-name" id="d-home-name"></div>
-                <div class="dh-score home" id="d-home-score">0</div>
+        <div id="detail-content" style="display:none" class="detail-grid">
+          <div style="display:flex; flex-direction:column; gap:20px">
+            <div class="detail-hero">
+              <div class="dh-bar">
+                <span class="dh-tournament" id="d-tournament"></span>
+                <span id="d-status-badge" style="font-size:11px;font-weight:600"></span>
               </div>
-              <div class="dh-sep">:</div>
-              <div class="dh-team">
-                <div class="dh-team-name" id="d-away-name"></div>
-                <div class="dh-score away" id="d-away-score">0</div>
+              <div class="dh-score-block">
+                <div class="dh-team">
+                  <div class="dh-team-name" id="d-home-name"></div>
+                  <div class="dh-score home" id="d-home-score">0</div>
+                </div>
+                <div class="dh-sep">:</div>
+                <div class="dh-team">
+                  <div class="dh-team-name" id="d-away-name"></div>
+                  <div class="dh-score away" id="d-away-score">0</div>
+                </div>
               </div>
+              <div class="set-breakdown" id="d-set-breakdown"></div>
             </div>
-            <div class="set-breakdown" id="d-set-breakdown"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" id="detail-stats-wrap">
-          </div>
-          <div class="point-log">
-            <div class="pl-header">
-              <h3 id="log-title-d"></h3>
-              <span id="pl-count" style="font-size:12px;color:var(--text3)"></span>
+            
+            <div class="point-log">
+              <div class="pl-header">
+                <h3 id="log-title-d"></h3>
+                <span id="pl-count" style="font-size:12px;color:var(--text3)"></span>
+              </div>
+              <div class="pl-body" id="point-log-body"></div>
             </div>
-            <div class="pl-body" id="point-log-body"></div>
+          </div>
+
+          <div id="detail-stats-wrap" style="display:flex; flex-direction:column; gap:16px">
+            <!-- Stats cards will be injected here -->
           </div>
         </div>
       </div>
