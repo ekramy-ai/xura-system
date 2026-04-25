@@ -18,12 +18,15 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
-      router.push('/login')
+    if (!loading && !user) {
+      router.push('/admin-setup')
+    } else if (!loading && user && !isAdmin) {
+      // User is logged in but not admin — show them the setup page
+      router.push('/admin-setup')
     }
   }, [user, isAdmin, loading, router])
 
-  if (loading || !isAdmin) {
+  if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
         <div className="skeleton" style={{ width: 48, height: 48, borderRadius: '50%' }} />
@@ -31,6 +34,8 @@ export default function DashboardLayout({ children }) {
       </div>
     )
   }
+
+  if (!isAdmin) return null
 
   return (
     <div className={styles.layout}>

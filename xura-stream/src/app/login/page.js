@@ -151,9 +151,12 @@ export default function LoginPage() {
         <Link href="/" className={styles.backLink}>← العودة للرئيسية</Link>
 
         <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-          <a href="/admin-login.html" style={{ fontSize: '12px', color: 'var(--text3)', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            🔐 دخول المسؤول (Admin)
-          </a>
+          <Link href="/admin-setup" style={{ fontSize: '13px', color: 'var(--text3)', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px', borderRadius: 8, transition: 'var(--tr)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface2)'; e.currentTarget.style.color = 'var(--amber)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text3)' }}
+          >
+            ⚙️ دخول لوحة الإدارة (Admin)
+          </Link>
         </div>
       </div>
     </div>
