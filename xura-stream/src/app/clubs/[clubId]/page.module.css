@@ -1,0 +1,227 @@
+.page { min-height: 100vh }
+
+/* Header */
+.header {
+  position: relative;
+  padding: 80px 0 40px;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.headerBg { position: absolute; inset: 0; pointer-events: none }
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 24px;
+  transition: var(--tr);
+}
+.backLink:hover { color: var(--teal) }
+
+.headerContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+.clubLogo {
+  width: 110px; height: 110px;
+  border-radius: 20px;
+  border: 3px solid;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.clubInfo { flex: 1 }
+.clubName {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.clubNameEn {
+  font-size: 14px;
+  color: var(--text3);
+  letter-spacing: .08em;
+  margin-bottom: 12px;
+}
+.clubMeta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+.clubDesc {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 12px;
+  max-width: 600px;
+}
+.socialLinks { display: flex; gap: 8px }
+.socialBtn {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  color: var(--text2);
+  transition: var(--tr);
+  text-decoration: none;
+  font-weight: 700;
+}
+.socialBtn:hover { border-color: var(--teal); color: var(--teal) }
+
+/* Sections */
+.sec { padding: 40px 0 80px }
+
+/* Teams */
+.teamsWrap { display: flex; flex-direction: column; gap: 12px }
+.teamCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.teamCard:has(.teamBody) { border-color: var(--border2) }
+.teamHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: var(--tr);
+}
+.teamHeader:hover { background: var(--surface2) }
+.teamTitle { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.teamCat {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.teamAge {
+  font-size: 12px;
+  background: var(--teal-bg);
+  color: var(--teal);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-weight: 600;
+}
+.teamSeason {
+  font-size: 12px;
+  color: var(--text3);
+  background: var(--surface2);
+  border-radius: 20px;
+  padding: 2px 10px;
+}
+.teamChevron {
+  font-size: 12px;
+  color: var(--text3);
+  transition: transform .25s ease;
+}
+.teamChevron.open { transform: rotate(180deg) }
+
+.teamBody {
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  animation: fadeUp .2s ease;
+}
+@media (max-width: 700px) { .teamBody { grid-template-columns: 1fr } }
+
+.teamSection {
+  padding: 20px;
+  border-left: 1px solid var(--border);
+}
+.teamSection:last-child { border-left: none }
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+}
+
+/* Players list */
+.playersList { display: flex; flex-direction: column; gap: 8px }
+.playerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface2);
+  transition: var(--tr);
+}
+.playerRow:hover { background: var(--surface3) }
+.playerNumber {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.playerAvatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  color: var(--text2);
+  font-size: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.playerAvatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50% }
+.playerInfo { flex: 1 }
+.playerName { font-size: 14px; font-weight: 600; color: var(--text) }
+.playerNat { font-size: 11px; color: var(--text3) }
+.posBadge { font-size: 10px !important; flex-shrink: 0 }
+
+/* Staff list */
+.staffList { display: flex; flex-direction: column; gap: 8px }
+.staffRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface2);
+}
+.staffAvatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--purple-bg);
+  border: 1.5px solid rgba(168,85,247,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  color: var(--purple);
+  font-size: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.staffAvatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50% }
+.staffInfo { flex: 1 }
+.staffName { font-size: 14px; font-weight: 600; color: var(--text) }
+.staffRole { font-size: 11px; color: var(--text3) }
+
+@media (max-width: 640px) {
+  .headerContent { flex-direction: column; align-items: center; text-align: center }
+  .clubMeta { justify-content: center }
+  .socialLinks { justify-content: center }
+}

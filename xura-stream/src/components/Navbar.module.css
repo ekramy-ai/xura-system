@@ -1,18 +1,18 @@
 .nav {
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 100;
   height: var(--nav-h);
-  background: rgba(10,10,15,0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  z-index: 100;
+  background: rgba(10,10,15,.7);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid transparent;
-  transition: all .3s ease;
+  transition: background .3s, border-color .3s;
 }
-.scrolled {
-  background: rgba(10,10,15,0.95);
-  border-bottom-color: var(--border);
+.nav.scrolled {
+  background: rgba(10,10,15,.95);
+  border-color: var(--border);
 }
+
 .inner {
   max-width: 1280px;
   margin: 0 auto;
@@ -22,28 +22,32 @@
   align-items: center;
   gap: 32px;
 }
+
+/* Brand */
 .brand {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: baseline;
+  gap: 4px;
   flex-shrink: 0;
 }
 .brandX {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 900;
-  color: #14b8a6;
-  letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--teal), #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -.5px;
 }
 .brandTag {
   font-size: 10px;
   font-weight: 700;
-  padding: 2px 7px;
-  background: rgba(20,184,166,0.15);
-  border: 1px solid rgba(20,184,166,0.3);
-  color: #14b8a6;
-  border-radius: 6px;
-  letter-spacing: .08em;
+  color: var(--text3);
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
+
+/* Desktop links */
 .links {
   display: flex;
   align-items: center;
@@ -58,71 +62,220 @@
   color: var(--text2);
   transition: var(--tr);
 }
-.link:hover { color: var(--text); background: var(--surface) }
-.active { color: var(--text) !important; background: var(--surface) }
-.auth {
-  flex-shrink: 0;
+.link:hover { background: var(--surface); color: var(--text) }
+.link.active {
+  background: var(--teal-bg);
+  color: var(--teal);
+  font-weight: 600;
+}
+
+/* Right side */
+.right {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-right: auto;
 }
-.userMenu {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.userMenu:hover .dropdown { opacity: 1; pointer-events: all; transform: translateY(0) }
+
+/* User avatar */
+.userMenu { position: relative }
 .avatar {
-  width: 36px;
-  height: 36px;
+  position: relative;
+  width: 36px; height: 36px;
   border-radius: 50%;
-  background: var(--teal-bg);
-  border: 2px solid var(--teal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
   font-weight: 700;
+  font-size: 14px;
   color: var(--teal);
   cursor: pointer;
+  transition: var(--tr);
+  padding: 0;
   overflow: hidden;
 }
-.avatar img { width: 100%; height: 100%; object-fit: cover }
+.avatar:hover { border-color: var(--teal); }
+.avatar img { border-radius: 50%; width: 100%; height: 100%; object-fit: cover }
+.adminDot {
+  position: absolute;
+  bottom: 1px; left: 1px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  border: 1.5px solid var(--bg);
+}
+
+/* Dropdown */
 .dropdown {
   position: absolute;
   top: calc(100% + 10px);
   left: 0;
-  min-width: 180px;
-  background: var(--bg3);
+  min-width: 200px;
+  background: var(--bg2);
   border: 1px solid var(--border2);
   border-radius: var(--r2);
   padding: 8px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-8px);
-  transition: all .2s ease;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  animation: fadeUp .15s ease;
 }
 .dropName {
-  padding: 6px 10px;
-  font-size: 12px;
+  padding: 8px 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text2);
   border-bottom: 1px solid var(--border);
-  margin-bottom: 6px;
-  font-weight: 500;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .dropItem {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text2);
   width: 100%;
   text-align: right;
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 13px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: var(--tr);
+  font-family: inherit;
+}
+.dropItem:hover { background: var(--surface2); color: var(--text) }
+.dropAdmin { color: var(--teal) !important }
+.dropAdmin:hover { background: var(--teal-bg) !important }
+.dropDivider { height: 1px; background: var(--border); margin: 4px 0 }
+.dropLogout:hover { background: var(--red-bg) !important; color: var(--red) !important }
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+}
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text2);
+  border-radius: 2px;
+  transition: var(--tr);
+  transform-origin: center;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg) }
+.hamburger.open span:nth-child(2) { opacity: 0 }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg) }
+
+/* Mobile Overlay */
+.mobileOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  animation: fadeUp .15s ease;
+}
+
+/* Mobile Drawer */
+.drawer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 300px;
+  max-width: 85vw;
+  height: 100vh;
+  background: var(--bg2);
+  border-left: 1px solid var(--border2);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 4px;
+}
+.drawerClose {
+  margin-right: auto;
+  background: var(--surface2);
+  border: none;
   color: var(--text2);
-  background: transparent;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--tr);
+}
+.drawerClose:hover { background: var(--red-bg); color: var(--red) }
+.drawerLinks {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 0;
+}
+.drawerLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text2);
+  text-decoration: none;
+  background: none;
   border: none;
   cursor: pointer;
   font-family: inherit;
+  width: 100%;
+  text-align: right;
   transition: var(--tr);
 }
-.dropItem:hover { background: var(--surface2); color: var(--text) }
+.drawerLink:hover { background: var(--surface2); color: var(--text) }
+.drawerActive { background: var(--teal-bg) !important; color: var(--teal) !important; font-weight: 700 }
+.drawerAdmin { color: var(--teal) }
+.drawerAdmin:hover { background: var(--teal-bg) !important }
+.drawerLogout { color: var(--red) }
+.drawerLogout:hover { background: var(--red-bg) !important }
+.drawerIcon { font-size: 18px; width: 24px; text-align: center; }
+.drawerUser {
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.drawerUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 16px;
+}
+.drawerAvatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  color: var(--teal);
+  font-size: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (min-width: 769px) {
+  .hamburger { display: none !important }
+  .mobileOverlay { display: none !important }
+}
+@media (max-width: 768px) {
+  .links { display: none }
+  .hamburger { display: flex }
+}

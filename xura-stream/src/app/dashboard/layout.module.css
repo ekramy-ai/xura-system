@@ -1,0 +1,109 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: var(--nav-h);
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+}
+
+.sidebarTop {
+  padding: 24px 16px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebarBrand {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.brandX {
+  font-size: 18px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--teal), #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.brandTag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: .12em;
+}
+.adminBadge {
+  font-size: 11px;
+  color: var(--amber);
+  background: var(--amber-bg);
+  border: 1px solid rgba(245,158,11,.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  display: inline-block;
+}
+
+.sideNav {
+  padding: 12px 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sideLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text2);
+  text-decoration: none;
+  transition: var(--tr);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  text-align: right;
+}
+.sideLink:hover { background: var(--surface2); color: var(--text) }
+.sideLink.active {
+  background: var(--teal-bg);
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.sideIcon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0 }
+
+.sidebarBottom {
+  padding: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* Main */
+.main {
+  flex: 1;
+  background: var(--bg);
+  overflow: hidden;
+}
+.mainInner {
+  padding: 32px;
+  max-width: 1100px;
+}
+
+@media (max-width: 900px) {
+  .sidebar { display: none }
+  .mainInner { padding: 20px 16px }
+}
