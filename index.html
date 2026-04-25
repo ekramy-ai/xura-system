@@ -1027,7 +1027,64 @@
       font-weight: 700
     }
 
-    /* ── Empty ───────────────────────────────────────────────── */
+    /* ── Schedule ─────────────────────────────────────────── */
+    .schedule-group { margin-bottom: 28px }
+    .schedule-group-title { font-size: 12px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px;
+      padding-bottom: 6px; border-bottom: 1px solid var(--border) }
+    .sch-card { background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r2); padding: 14px 18px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 16px; cursor: pointer;
+      transition: var(--tr) }
+    .sch-card:hover { border-color: var(--teal-mid); transform: translateX(4px) }
+    .sch-card.is-live { border-inline-start: 3px solid var(--red) }
+    .sch-card.is-done { opacity: .7 }
+    .sch-teams { flex: 1; font-size: 14px; font-weight: 700 }
+    .sch-meta { font-size: 11px; color: var(--text3); margin-top: 3px }
+    .sch-score { font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums;
+      letter-spacing: -1px; text-align: center; min-width: 60px }
+    .sch-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700 }
+
+    /* ── Stats / Leaderboard ─────────────────────────────── */
+    .stats-filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px }
+    .lb-table { width: 100%; border-collapse: collapse; font-size: 13px }
+    .lb-table th { padding: 10px 14px; background: var(--bg3); color: var(--text3);
+      font-size: 11px; text-align: center; border-bottom: 1px solid var(--border);
+      font-weight: 600; letter-spacing: .05em }
+    .lb-table th:nth-child(2) { text-align: start }
+    .lb-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); text-align: center }
+    .lb-table td:nth-child(2) { text-align: start; font-weight: 600 }
+    .lb-table tr:last-child td { border-bottom: none }
+    .lb-table tr:hover td { background: var(--surface2) }
+    .lb-medal { width: 28px; height: 28px; border-radius: 50%; display: inline-flex;
+      align-items: center; justify-content: center; font-size: 12px; font-weight: 700 }
+    .lb-medal.r1 { background: var(--amber-dark); color: var(--amber) }
+    .lb-medal.r2 { background: #1c2535; color: #94a3b8 }
+    .lb-medal.r3 { background: #1e1510; color: #cd7c3e }
+    .lb-medal.rn { background: var(--surface2); color: var(--text3) }
+    .pt-pill { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px;
+      font-weight: 700; margin: 1px }
+
+    /* ── Print Scoresheet ────────────────────────────────── */
+    @media print {
+      body > *:not(#print-sheet) { display: none !important }
+      #print-sheet { display: block !important }
+    }
+    #print-sheet { display: none; padding: 20px; font-family: Arial, sans-serif;
+      font-size: 12px; color: #000; max-width: 900px; margin: 0 auto }
+    .ps-header { display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 14px }
+    .ps-title { font-size: 18px; font-weight: 900 }
+    .ps-score-grid { display: grid; grid-template-columns: 1fr auto 1fr;
+      gap: 10px; text-align: center; margin-bottom: 16px }
+    .ps-team-name { font-size: 20px; font-weight: 900 }
+    .ps-sets-score { font-size: 48px; font-weight: 900; line-height: 1 }
+    .ps-sets-table { width: 100%; border-collapse: collapse; margin-bottom: 14px }
+    .ps-sets-table th, .ps-sets-table td { border: 1px solid #000; padding: 6px 10px;
+      text-align: center; font-size: 12px }
+    .ps-sets-table th { background: #eee; font-weight: 700 }
+    .ps-events-table { width: 100%; border-collapse: collapse; font-size: 11px }
+    .ps-events-table th, .ps-events-table td { border: 1px solid #ccc; padding: 4px 8px }
     .empty {
       text-align: center;
       padding: 60px 20px;
@@ -1341,6 +1398,8 @@
       <div class="nav-tabs" style="flex:1; justify-content: center">
         <button class="nav-tab active" data-view="home" id="tab-home"></button>
         <button class="nav-tab" data-view="standings" id="tab-standings"></button>
+        <button class="nav-tab" data-view="schedule" id="tab-schedule"></button>
+        <button class="nav-tab" data-view="stats" id="tab-stats"></button>
         <button class="nav-tab" data-view="detail" id="detail-tab" style="display:none"></button>
         <div id="admin-tabs"
           style="display:none;gap:4px;border-inline-start:1px solid var(--border);padding-inline-start:10px;margin-inline-start:10px">
@@ -1431,8 +1490,13 @@
       <!-- ── DETAIL ── -->
       <!-- ✅ FIX: DOM is NEVER replaced — only content inside elements is updated -->
       <div id="view-detail" class="view">
-        <button onclick="navigate('home')" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;
-             margin-bottom:20px;background:none;border:none;padding:0" id="detail-back"></button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <button onclick="navigate('home')" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;
+               background:none;border:none;padding:0" id="detail-back"></button>
+          <button id="print-btn" onclick="printScoresheet()"
+            style="padding:6px 14px;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:var(--r);font-size:12px;cursor:pointer">
+          </button>
+        </div>
 
         <!-- Loading overlay (shown while waiting for Firestore) -->
         <div id="detail-loading" style="display:none;text-align:center;padding:60px 20px;color:var(--text3)">
@@ -1553,8 +1617,66 @@
         </div>
       </div>
 
+      <!-- ── SCHEDULE ── -->
+      <div id="view-schedule" class="view">
+        <div class="sec-hd" style="margin-bottom:20px">
+          <h2 id="schedule-title"></h2>
+          <div style="display:flex;gap:8px">
+            <select id="sch-tournament-filter"
+              style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r);font-size:13px"
+              onchange="renderSchedule()">
+              <option value="">All</option>
+            </select>
+          </div>
+        </div>
+        <div id="schedule-live-group" class="schedule-group" style="display:none">
+          <div class="schedule-group-title" id="sch-live-lbl">🔴 Live</div>
+          <div id="schedule-live-list"></div>
+        </div>
+        <div id="schedule-done-group" class="schedule-group">
+          <div class="schedule-group-title" id="sch-done-lbl">Finished</div>
+          <div id="schedule-done-list"></div>
+        </div>
+        <div id="schedule-empty" style="display:none" class="empty">
+          <div class="big">📅</div>
+          <p id="schedule-empty-txt"></p>
+        </div>
+      </div>
+
+      <!-- ── STATS ── -->
+      <div id="view-stats" class="view">
+        <div class="sec-hd" style="margin-bottom:16px">
+          <h2 id="stats-page-title"></h2>
+          <div style="display:flex;gap:8px">
+            <select id="stats-tournament-filter"
+              style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r);font-size:13px"
+              onchange="renderPlayerStats()">
+              <option value="">All</option>
+            </select>
+          </div>
+        </div>
+        <!-- Top Scorers -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:24px">
+          <div style="padding:12px 18px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:14px;font-weight:700" id="top-scorers-title"></span>
+            <span style="font-size:11px;color:var(--text3)" id="top-scorers-sub"></span>
+          </div>
+          <table class="lb-table"><thead id="lb-head"></thead><tbody id="lb-body"></tbody></table>
+        </div>
+        <!-- Point Types Breakdown -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden">
+          <div style="padding:12px 18px;background:var(--bg3);border-bottom:1px solid var(--border)">
+            <span style="font-size:14px;font-weight:700" id="pt-breakdown-title"></span>
+          </div>
+          <div id="pt-breakdown-body" style="padding:16px;display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+      </div>
+
     </div>
   </div>
+
+  <!-- Print Scoresheet (hidden, shown on print) -->
+  <div id="print-sheet"></div>
 
   <div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
 background:var(--surface2);color:var(--text);padding:10px 22px;border-radius:24px;
@@ -1569,7 +1691,8 @@ border:1px solid var(--border2)"></div>
     /* ── i18n ─────────────────────────────────────────────────── */
     const I18N = {
       en: {
-        navMatches: 'Matches', navStandings: 'Standings', navDetail: 'Match Detail', navDashboard: 'Command Center',
+        navMatches: 'Matches', navStandings: 'Standings', navDetail: 'Match Detail',
+        navDashboard: 'Command Center', navSchedule: 'Schedule', navStats: 'Stats',
         homeTitle: 'Live Matches', upcomingTitle: 'Matches History', lastUpdate: (t) => `Updated ${t}`,
         noLive: 'Start a match in the Referee app to see live results here',
         statusLive: 'Live', statusFinished: 'Finished', statusScheduled: 'Upcoming',
@@ -1605,9 +1728,20 @@ border:1px solid var(--border2)"></div>
         detailLoading: 'Loading match data…',
         detailNoMatch: 'Please select a match from the matches list first',
         detailNoMatchBtn: 'Back to Matches',
+        printScoresheet: '🖨 Print Scoresheet',
+        scheduleTitle: 'Match Schedule', scheduleEmpty: 'No matches found.',
+        schLive: '🔴 Live Now', schDone: '✓ Finished',
+        statsTitle: 'Player Statistics', topScorersTitle: '🏆 Top Scorers',
+        topScorersNote: n => `${n} players with scored points`,
+        lbPlayer: 'Player', lbTeam: 'Team', lbPts: 'Pts',
+        lbAttack: 'Atk', lbAce: 'Ace', lbBlock: 'Blk', lbDig: 'Dig',
+        ptBreakdownTitle: 'Point Types — All Matches',
+        statsFilter: 'Filter by Tournament',
+        scoresheetTitle: 'XURA Official Scoresheet',
       },
       ar: {
-        navMatches: 'المباريات', navStandings: 'الترتيب', navDetail: 'التفاصيل', navDashboard: 'لوحة التحكم',
+        navMatches: 'المباريات', navStandings: 'الترتيب', navDetail: 'التفاصيل',
+        navDashboard: 'لوحة التحكم', navSchedule: 'الجدول', navStats: 'الإحصائيات',
         homeTitle: 'المباريات الحية', upcomingTitle: 'سجل المباريات', lastUpdate: (t) => `آخر تحديث ${t}`,
         noLive: 'ابدأ مباراة في تطبيق الحكم لترى النتائج هنا',
         statusLive: 'مباشر', statusFinished: 'انتهت', statusScheduled: 'قادمة',
@@ -1643,6 +1777,16 @@ border:1px solid var(--border2)"></div>
         detailLoading: 'جارٍ تحميل بيانات المباراة…',
         detailNoMatch: 'يرجى اختيار مباراة من القائمة الرئيسية أولاً',
         detailNoMatchBtn: 'العودة للمباريات',
+        printScoresheet: '🖨 طباعة ورقة النتيجة',
+        scheduleTitle: 'جدول المباريات', scheduleEmpty: 'لا توجد مباريات.',
+        schLive: '🔴 مباشر', schDone: '✓ منتهية',
+        statsTitle: 'إحصائيات اللاعبين', topScorersTitle: '🏆 أفضل الهدافين',
+        topScorersNote: n => `${n} لاعب سجّل نقاط`,
+        lbPlayer: 'اللاعب', lbTeam: 'الفريق', lbPts: 'نقط',
+        lbAttack: 'ضرب', lbAce: 'إيس', lbBlock: 'كتلة', lbDig: 'استقبال',
+        ptBreakdownTitle: 'أنواع النقاط — كل المباريات',
+        statsFilter: 'فلتر بالبطولة',
+        scoresheetTitle: 'ورقة نتيجة رسمية — XURA',
       }
     }
 
@@ -1655,7 +1799,12 @@ border:1px solid var(--border2)"></div>
     function applyDir() {
       document.documentElement.lang = LANG
       document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr'
-      document.getElementById('lang-toggle').textContent = LANG === 'ar' ? 'EN' : 'عر'
+      if (document.getElementById('lang-toggle')) {
+        document.getElementById('lang-toggle').textContent = LANG === 'ar' ? 'EN' : 'عر'
+      }
+      // Wire print button label
+      const printBtnEl = document.getElementById('print-btn')
+      if (printBtnEl) printBtnEl.textContent = T().printScoresheet
     }
 
     function toggleLang() {
@@ -1665,6 +1814,8 @@ border:1px solid var(--border2)"></div>
       updateStaticText()
       pollReferee()
       renderStandings()
+      renderSchedule()
+      renderPlayerStats()
       if (APP.currentView === 'detail') renderDetail(APP.lastRenderedMatch)
     }
 
@@ -1672,6 +1823,8 @@ border:1px solid var(--border2)"></div>
       const tr = T()
       document.getElementById('tab-home').textContent = tr.navMatches
       document.getElementById('tab-standings').textContent = tr.navStandings
+      document.getElementById('tab-schedule').textContent = tr.navSchedule
+      document.getElementById('tab-stats').textContent = tr.navStats
       document.getElementById('detail-tab').textContent = tr.navDetail
       document.getElementById('tab-dashboard').textContent = tr.navDashboard
       document.getElementById('home-title').textContent = tr.homeTitle
@@ -1725,7 +1878,6 @@ border:1px solid var(--border2)"></div>
     const URL_MATCH_ID = new URLSearchParams(window.location.search).get('matchId')
 
     /* ── App State ───────────────────────────────────────────── */
-    // ✅ FIX 1: Added unsubscribeMatch to properly clean up Firestore listeners
     const APP = {
       currentView: 'home',
       refereeData: null,
@@ -1733,11 +1885,10 @@ border:1px solid var(--border2)"></div>
       lastEventCount: 0,
       pollInterval: null,
       selectedMatchId: null,
-      unsubscribeMatch: null,   // ← NEW: holds the Firestore unsubscribe function
-      lastRenderedMatch: null,  // ← NEW: cache for language toggle re-render
+      unsubscribeMatch: null,
+      lastRenderedMatch: null,
     }
 
-    // Global match data — set by Firestore listener
     let matchData = null
     window.eventsData = []
     window.lastHeartbeat = null
@@ -1760,18 +1911,15 @@ border:1px solid var(--border2)"></div>
         const matchId = (typeof data === 'string' ? data : null) || APP.selectedMatchId || URL_MATCH_ID
 
         if (!matchId) {
-          // No match ID — show no-match state without touching the DOM structure
           showDetailState('nomatch')
           return
         }
 
         if (matchId !== APP.selectedMatchId) {
-          // ✅ FIX 2: Unsubscribe OLD listener before starting a new one
           if (APP.unsubscribeMatch) {
             APP.unsubscribeMatch()
             APP.unsubscribeMatch = null
           }
-          // Reset match state
           window.eventsData = []
           window.lastHeartbeat = null
           matchData = null
@@ -1779,13 +1927,9 @@ border:1px solid var(--border2)"></div>
           APP.lastRenderedMatch = null
           APP.lastEventCount = 0
 
-          // Show loading skeleton while Firestore fetches
           showDetailState('loading')
-
-          // ✅ FIX 3: listenToMatch returns the unsubscribe — save it
           APP.unsubscribeMatch = listenToMatch(matchId)
         } else {
-          // Same match — re-render with cached data
           if (APP.lastRenderedMatch) renderDetail(APP.lastRenderedMatch)
           else showDetailState('loading')
         }
@@ -1794,10 +1938,11 @@ border:1px solid var(--border2)"></div>
       }
 
       if (view === 'standings') renderStandings()
+      if (view === 'schedule')  renderSchedule()
+      if (view === 'stats')     renderPlayerStats()
       if (view === 'dashboard') renderDashboard()
     }
 
-    // Helper: toggle which detail sub-panel is visible
     function showDetailState(state) {
       document.getElementById('detail-loading').style.display = state === 'loading' ? 'block' : 'none'
       document.getElementById('detail-nomatch').style.display = state === 'nomatch' ? 'block' : 'none'
@@ -1808,21 +1953,15 @@ border:1px solid var(--border2)"></div>
       if (t.dataset.view) t.addEventListener('click', () => navigate(t.dataset.view))
     })
 
-    /* ── isConnected ─────────────────────────────────────────── */
-    // ✅ FIX 4: Removed the false-positive "return true" when no matchId
     function isConnected() {
       if (!APP.selectedMatchId && !URL_MATCH_ID) return false
       return !!(window.lastHeartbeat && Date.now() - parseInt(window.lastHeartbeat) < 20000)
     }
 
-    /* ── buildMatch ──────────────────────────────────────────── */
     function buildMatch(data) {
-      if (!data) return null   // ✅ FIX 5: Guard against null data
-
+      if (!data) return null
       const events = (data.events || []).filter(e => !e.undone)
       const setMap = {}
-
-      // 1. setScores from match document (authoritative)
       if (data.setScores && Array.isArray(data.setScores)) {
         data.setScores.forEach(s => {
           setMap[s.num] = {
@@ -1831,16 +1970,12 @@ border:1px solid var(--border2)"></div>
           }
         })
       }
-
-      // 2. Supplement with events
       events.forEach(e => {
         const sn = e.set_num || 1
         if (!setMap[sn]) setMap[sn] = { num: sn, homeScore: 0, awayScore: 0, finished: false, winner: null }
         if (e.home_score_after > setMap[sn].homeScore) setMap[sn].homeScore = e.home_score_after
         if (e.away_score_after > setMap[sn].awayScore) setMap[sn].awayScore = e.away_score_after
       })
-
-      // 3. Ensure current set exists
       const curSetNum = data.currentSetNum || 1
       if (!setMap[curSetNum]) {
         setMap[curSetNum] = { num: curSetNum, homeScore: data.currentHomeScore || 0, awayScore: data.currentAwayScore || 0, finished: false, winner: null }
@@ -1848,7 +1983,6 @@ border:1px solid var(--border2)"></div>
         if (data.currentHomeScore !== undefined) setMap[curSetNum].homeScore = data.currentHomeScore
         if (data.currentAwayScore !== undefined) setMap[curSetNum].awayScore = data.currentAwayScore
       }
-
       const sets = Object.values(setMap).sort((a, b) => a.num - b.num)
       let homeSets = 0, awaySets = 0
       sets.forEach(s => {
@@ -1860,7 +1994,6 @@ border:1px solid var(--border2)"></div>
       })
       const cur = sets.find(s => !s.finished) || sets[sets.length - 1]
       const last = events.length > 0 ? events[events.length - 1] : null
-
       return {
         id: data.id || 'match-live',
         tournament: data.tournament || (LANG === 'ar' ? 'مباراة مباشرة' : 'Live Match'),
@@ -1878,32 +2011,22 @@ border:1px solid var(--border2)"></div>
       }
     }
 
-    /* ── Poll Loop ────────────────────────────────────────────── */
     function pollReferee() {
-      // ✅ FIX 6: Guard — don't call buildMatch with null matchData
       const match = matchData ? buildMatch({ ...matchData, events: window.eventsData }) : null
-
       const connected = isConnected()
       APP.refereeData = match ? { events: window.eventsData } : null
-
-      // Connection badge
       const badge = document.getElementById('conn-badge')
       badge.className = `conn-badge ${connected ? 'on' : 'off'}`
       badge.textContent = connected ? T().connOn : T().connOff
-
-      // Ref pulse
       const pulse = document.getElementById('ref-pulse')
       if (pulse) {
         pulse.className = `ref-link-pulse ${connected ? 'active' : 'inactive'}`
         const sub = document.getElementById('ref-link-sub')
         if (sub) sub.textContent = connected ? T().refConnected : T().refDisconnected
       }
-
-      // Activity feed — ✅ FIX 7: use match.homeClub/awayClub from Firestore, not static CLUBS
       if (match && window.eventsData.length > APP.lastEventCount) {
         window.eventsData.slice(APP.lastEventCount).forEach(e => {
           const pt = PT_META[e.point_type] || PT_META.other
-          // Use the actual club from the loaded match data
           const club = e.scoring_side === 'home' ? match.homeClub : match.awayClub
           const sName = LANG === 'ar' ? (club.name_ar || club.name_en) : (club.name_en || club.name_ar)
           const pNum = e.player_num ? ` #${e.player_num}` : ''
@@ -1916,25 +2039,19 @@ border:1px solid var(--border2)"></div>
         })
         APP.lastEventCount = window.eventsData.length
       }
-
       if (APP.currentView === 'detail' && match) renderDetail(match)
       if (APP.currentView === 'dashboard' && match) renderDashboard(match)
-
       if (match) {
         const d = new Date(match.lastUpdate)
         const el = document.getElementById('last-update-txt')
-        if (el) el.textContent = T().lastUpdate(
-          d.toLocaleTimeString(LANG === 'ar' ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-        )
+        if (el) el.textContent = T().lastUpdate(d.toLocaleTimeString(LANG === 'ar' ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
       }
     }
 
-    /* ── Home ─────────────────────────────────────────────────── */
     function renderHome(matchesInput) {
       const liveCards = document.getElementById('live-cards')
       const liveEl = document.getElementById('live-empty')
       let matches = Array.isArray(matchesInput) ? matchesInput : (matchesInput ? [matchesInput] : [])
-
       if (matches.length > 0) {
         if (liveEl) liveEl.style.display = 'none'
         liveCards.innerHTML = matches.map(m => matchCardHTML(m, true)).join('')
@@ -1942,27 +2059,17 @@ border:1px solid var(--border2)"></div>
         if (liveEl) liveEl.style.display = 'block'
         liveCards.innerHTML = `<div class="empty"><div class="big">⚡</div><p>${T().noLive}</p></div>`
       }
-
       document.getElementById('upcoming-title').textContent = T().upcomingTitle
       const historyCards = document.getElementById('upcoming-cards')
       const history = window.historyMatches || []
-
       if (history.length > 0) {
         historyCards.innerHTML = history.slice().reverse().map(h => {
-          const hc = h.homeClub || h.home || {}
-          const ac = h.awayClub || h.away || {}
-          const hName = LANG === 'ar' ? (hc.name_ar || hc.name_en || 'Home') : (hc.name_en || hc.name_ar || 'Home')
-          const aName = LANG === 'ar' ? (ac.name_ar || ac.name_en || 'Away') : (ac.name_en || ac.name_ar || 'Away')
-          const tName = LANG === 'ar' ? `مباراة — ${h.ageGroup || ''}` : `Match — ${h.ageGroup || ''}`
-          const dt = new Date(h.dateFinished || h.lastUpdate || h.date)
-          const d = isNaN(dt) ? '' : dt.toLocaleTimeString(LANG === 'ar' ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' })
           const built = buildMatch(h)
           if (!built) return ''
           return matchCardHTML(built, false)
         }).filter(Boolean).join('')
       } else {
-        historyCards.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:40px">
-      <div class="big">📅</div><p>${LANG === 'ar' ? 'لا توجد مباريات سابقة' : 'No past matches'}</p></div>`
+        historyCards.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:40px"><div class="big">📅</div><p>${LANG === 'ar' ? 'لا توجد مباريات سابقة' : 'No past matches'}</p></div>`
       }
     }
 
@@ -1972,7 +2079,6 @@ border:1px solid var(--border2)"></div>
       const statusLabel = m.status === 'live' ? tr.statusLive : m.status === 'finished' ? tr.statusFinished : tr.statusScheduled
       const hName = LANG === 'ar' ? (m.homeClub?.name_ar || 'Home') : (m.homeClub?.name_en || 'Home')
       const aName = LANG === 'ar' ? (m.awayClub?.name_ar || 'Away') : (m.awayClub?.name_en || 'Away')
-
       let hTotal = 0, aTotal = 0
       const setsHTML = [1, 2, 3, 4, 5].map(i => {
         const s = m.sets.find(x => x.num === i)
@@ -1984,49 +2090,14 @@ border:1px solid var(--border2)"></div>
           a: `<div class="mcs-set ${aCls}">${s ? s.awayScore : '-'}</div>`
         }
       })
-
-      const scoreboardHTML = `
-    <div class="mc-scoreboard">
-      <div class="mcs-row mcs-header">
-        <div class="mcs-team">${tr.setsLabel || 'SETS'}</div>
-        ${[1, 2, 3, 4, 5].map(i => `<div class="mcs-set">${i}</div>`).join('')}
-        <div class="mcs-set mcs-total">T</div>
-      </div>
-      <div class="mcs-row">
-        <div class="mcs-team">${hName} <span class="mcs-sets-won home">${m.homeSets}</span></div>
-        ${setsHTML.map(x => x.h).join('')}
-        <div class="mcs-set mcs-total">${hTotal}</div>
-      </div>
-      <div class="mcs-row">
-        <div class="mcs-team">${aName} <span class="mcs-sets-won away">${m.awaySets}</span></div>
-        ${setsHTML.map(x => x.a).join('')}
-        <div class="mcs-set mcs-total">${aTotal}</div>
-      </div>
-    </div>`
-
+      const scoreboardHTML = `<div class="mc-scoreboard"><div class="mcs-row mcs-header"><div class="mcs-team">${tr.setsLabel || 'SETS'}</div>${[1, 2, 3, 4, 5].map(i => `<div class="mcs-set">${i}</div>`).join('')}<div class="mcs-set mcs-total">T</div></div><div class="mcs-row"><div class="mcs-team">${hName} <span class="mcs-sets-won home">${m.homeSets}</span></div>${setsHTML.map(x => x.h).join('')}<div class="mcs-set mcs-total">${hTotal}</div></div><div class="mcs-row"><div class="mcs-team">${aName} <span class="mcs-sets-won away">${m.awaySets}</span></div>${setsHTML.map(x => x.a).join('')}<div class="mcs-set mcs-total">${aTotal}</div></div></div>`
       const lastEvt = m.events[m.events.length - 1]
       const lastInfo = lastEvt ? `${tr.set(m.currentSetNum)} · ${tr.pts(m.events.length)}` : ''
-
-      return `<div class="match-card ${isLive ? 'is-live pulse-ring' : ''}" onclick="navigate('detail','${m.id}')" style="padding:0">
-    <div class="mc-header">
-      <span class="mc-tournament">${m.tournament}</span>
-      <span class="mc-status ${m.status}">${statusLabel}</span>
-    </div>
-    ${scoreboardHTML}
-    <div class="mc-match-info" style="display:flex;justify-content:space-between;padding:8px 16px">
-      <span>${m.refereeName ? '👤 ' + m.refereeName : ''}</span>
-      <span>${lastInfo}</span>
-    </div>
-  </div>`
+      return `<div class="match-card ${isLive ? 'is-live pulse-ring' : ''}" onclick="navigate('detail','${m.id}')" style="padding:0"><div class="mc-header"><span class="mc-tournament">${m.tournament}</span><span class="mc-status ${m.status}">${statusLabel}</span></div>${scoreboardHTML}<div class="mc-match-info" style="display:flex;justify-content:space-between;padding:8px 16px"><span>${m.refereeName ? '👤 ' + m.refereeName : ''}</span><span>${lastInfo}</span></div></div>`
     }
 
-    /* ── Detail ───────────────────────────────────────────────── */
-    // ✅ FIX 8: renderDetail NEVER replaces the DOM structure.
-    //           Uses showDetailState() to toggle visibility panels only.
     function renderDetail(m) {
-      // Cache for language toggle
       if (m) APP.lastRenderedMatch = m
-
       if (!APP.selectedMatchId && !URL_MATCH_ID) {
         showDetailState('nomatch')
         return
@@ -2035,328 +2106,136 @@ border:1px solid var(--border2)"></div>
         showDetailState('loading')
         return
       }
-
-      // Show content panel
       showDetailState('content')
-
       const tr = T()
-      // ✅ FIX 9: Always derive names from m.homeClub / m.awayClub — NEVER from static CLUBS object
       const hClub = m.homeClub || {}
       const aClub = m.awayClub || {}
       const hName = LANG === 'ar' ? (hClub.name_ar || hClub.name_en || 'Home') : (hClub.name_en || hClub.name_ar || 'Home')
       const aName = LANG === 'ar' ? (aClub.name_ar || aClub.name_en || 'Away') : (aClub.name_en || aClub.name_ar || 'Away')
       const hColor = hClub.color || 'var(--teal)'
       const aColor = aClub.color || 'var(--blue)'
-
-      // Update CSS vars to match current match teams
       document.documentElement.style.setProperty('--teal', hColor)
       document.documentElement.style.setProperty('--blue', aColor)
-
       document.getElementById('d-tournament').textContent = m.tournament
       document.getElementById('d-home-name').textContent = hName
       document.getElementById('d-away-name').textContent = aName
       document.getElementById('d-home-score').textContent = m.currentHomeScore
       document.getElementById('d-away-score').textContent = m.currentAwayScore
-
       const sb = document.getElementById('d-status-badge')
       sb.textContent = m.status === 'live' ? tr.matchLive : tr.matchFinished
       sb.style.color = m.status === 'live' ? 'var(--red)' : 'var(--text3)'
-
       document.getElementById('d-set-breakdown').innerHTML = m.sets.map(s => {
         const cls = !s.finished ? 'active' : s.winner === 'home' ? 'won-home' : 'won-away'
-        return `<div class="sb-item ${cls}">
-      <div class="sb-num">${tr.set(s.num)}</div>
-      <div class="sb-score" style="color:${!s.finished ? 'var(--text)' : s.winner === 'home' ? hColor : aColor}">
-        ${s.homeScore}–${s.awayScore}
-      </div>
-    </div>`
+        return `<div class="sb-item ${cls}"><div class="sb-num">${tr.set(s.num)}</div><div class="sb-score" style="color:${!s.finished ? 'var(--text)' : s.winner === 'home' ? hColor : aColor}">${s.homeScore}–${s.awayScore}</div></div>`
       }).join('')
-
       const events = m.events
       const hEvt = events.filter(e => e.scoring_side === 'home')
       const aEvt = events.filter(e => e.scoring_side === 'away')
       const tot = events.length || 1
-
-      document.getElementById('detail-stats-wrap').innerHTML = `
-    <div class="card" style="padding:16px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:14px">${tr.statsTitle}</div>
-      ${statRow(tr.detailLogTitle, hEvt.length, aEvt.length, tot)}
-      ${Object.keys(PT_META).map(id => {
+      document.getElementById('detail-stats-wrap').innerHTML = `<div class="card" style="padding:16px"><div style="font-size:13px;font-weight:700;margin-bottom:14px">${tr.statsTitle}</div>${statRow(tr.detailLogTitle, hEvt.length, aEvt.length, tot)}${Object.keys(PT_META).map(id => {
         const h = hEvt.filter(e => e.point_type === id).length
         const a = aEvt.filter(e => e.point_type === id).length
         const pt = PT_META[id]
         return statRow(`${pt.icon} ${ptLabel(id)}`, h, a, tot, pt.color)
-      }).join('')}
-    </div>
-    <div class="card" style="padding:16px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:14px">${tr.statsCurrentSet}</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;justify-content:space-between;font-size:13px">
-          <span style="color:${hColor}">${hName}</span>
-          <span style="font-weight:700;font-variant-numeric:tabular-nums">${m.currentHomeScore} : ${m.currentAwayScore}</span>
-          <span style="color:${aColor}">${aName}</span>
-        </div>
-        <div style="font-size:12px;color:var(--text3)">${tr.set(m.currentSetNum)}</div>
-        <div style="height:1px;background:var(--border);margin:4px 0"></div>
-        <div style="font-size:12px;color:var(--text2)">${tr.setsWon}</div>
-        <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:700">
-          <span style="color:${hColor}">${m.homeSets}</span>
-          <span style="color:var(--text3)">${LANG === 'ar' ? 'أشواط' : 'sets'}</span>
-          <span style="color:${aColor}">${m.awaySets}</span>
-        </div>
-      </div>
-    </div>`
-
+      }).join('')}</div><div class="card" style="padding:16px"><div style="font-size:13px;font-weight:700;margin-bottom:14px">${tr.statsCurrentSet}</div><div style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:${hColor}">${hName}</span><span style="font-weight:700;font-variant-numeric:tabular-nums">${m.currentHomeScore} : ${m.currentAwayScore}</span><span style="color:${aColor}">${aName}</span></div><div style="font-size:12px;color:var(--text3)">${tr.set(m.currentSetNum)}</div><div style="height:1px;background:var(--border);margin:4px 0"></div><div style="font-size:12px;color:var(--text2)">${tr.setsWon}</div><div style="display:flex;justify-content:space-between;font-size:20px;font-weight:700"><span style="color:${hColor}">${m.homeSets}</span><span style="color:var(--text3)">${LANG === 'ar' ? 'أشواط' : 'sets'}</span><span style="color:${aColor}">${m.awaySets}</span></div></div></div>`
       document.getElementById('pl-count').textContent = tr.pts(events.length)
       document.getElementById('log-title-d').textContent = tr.detailLogTitle
-
       const logBody = document.getElementById('point-log-body')
       const visible = [...events].reverse().slice(0, 50)
-
       if (!visible.length) {
         logBody.innerHTML = `<div style="padding:20px;text-align:center;font-size:13px;color:var(--text3)">${tr.detailNoPts}</div>`
         return
       }
-
-      // ✅ FIX 10: Point Log uses m.homeClub/m.awayClub — NOT the old static CLUBS object
       logBody.innerHTML = visible.map(e => {
         const pt = PT_META[e.point_type] || PT_META.other
         const club = e.scoring_side === 'home' ? hClub : aClub
         const sName = LANG === 'ar' ? (club.name_ar || club.name_en || '?') : (club.name_en || club.name_ar || '?')
         const sColor = club.color || (e.scoring_side === 'home' ? 'var(--teal)' : 'var(--blue)')
         const pNum = e.player_num ? `<span style="font-size:11px;color:var(--text3);font-weight:400"> #${e.player_num}</span>` : ''
-        return `<div class="pl-item">
-      <div class="pl-type-icon" style="background:${pt.bg}"><span style="color:${pt.color}">${pt.icon}</span></div>
-      <span class="pl-club" style="color:${sColor}">${sName}${pNum}</span>
-      <span class="pl-set">${tr.set(e.set_num)}</span>
-      <span class="pl-score">${e.home_score_after} — ${e.away_score_after}</span>
-    </div>`
+        return `<div class="pl-item"><div class="pl-type-icon" style="background:${pt.bg}"><span style="color:${pt.color}">${pt.icon}</span></div><span class="pl-club" style="color:${sColor}">${sName}${pNum}</span><span class="pl-set">${tr.set(e.set_num)}</span><span class="pl-score">${e.home_score_after} — ${e.away_score_after}</span></div>`
       }).join('')
     }
 
     function statRow(label, home, away, total, color = '#5eead4') {
       const hp = Math.round((home / total) * 100), ap = Math.round((away / total) * 100)
-      return `<div class="stat-row">
-    <span class="stat-label" style="min-width:90px">${label}</span>
-    <span class="stat-val" style="color:var(--teal);min-width:20px;text-align:end">${home}</span>
-    <div class="stat-bar-wrap">
-      <div style="display:flex;height:100%">
-        <div class="stat-bar" style="width:${hp}%;background:var(--teal);border-radius:3px 0 0 3px"></div>
-        <div class="stat-bar" style="width:${ap}%;background:var(--blue);border-radius:0 3px 3px 0"></div>
-      </div>
-    </div>
-    <span class="stat-val" style="color:var(--blue);min-width:20px">${away}</span>
-  </div>`
+      return `<div class="stat-row"><span class="stat-label" style="min-width:90px">${label}</span><span class="stat-val" style="color:var(--teal);min-width:20px;text-align:end">${home}</span><div class="stat-bar-wrap"><div style="display:flex;height:100%"><div class="stat-bar" style="width:${hp}%;background:var(--teal);border-radius:3px 0 0 3px"></div><div class="stat-bar" style="width:${ap}%;background:var(--blue);border-radius:0 3px 3px 0"></div></div></div><span class="stat-val" style="color:var(--blue);min-width:20px">${away}</span></div>`
     }
 
-    /* ── Dashboard ────────────────────────────────────────────── */
     function renderDashboard(matchArg) {
-      // ✅ FIX 11: Guard against null matchData in dashboard too
       const m = matchArg || (matchData ? buildMatch({ ...matchData, events: window.eventsData }) : null)
       const events = m?.events || []
       const connected = isConnected()
       const tr = T()
-
       document.getElementById('kpi-live').textContent = window.currentLiveMatches.length || (m && m.status === 'live' ? 1 : 0)
       document.getElementById('kpi-pts').textContent = events.length
       document.getElementById('kpi-refs').textContent = connected ? 1 : 0
       let fins = 0; if (m) m.sets.forEach(s => { if (s.finished) fins++ })
       document.getElementById('kpi-sets').textContent = fins
-
       const mList = document.getElementById('dash-matches-list')
-      document.getElementById('dash-active-count').textContent = m
-        ? (m.status === 'live' ? (LANG === 'ar' ? '1 مباراة حية' : '1 Live Match') : (LANG === 'ar' ? 'مباراة منتهية' : 'Match Finished'))
-        : (LANG === 'ar' ? 'لا توجد مباريات' : 'No matches')
-
+      document.getElementById('dash-active-count').textContent = m ? (m.status === 'live' ? (LANG === 'ar' ? '1 مباراة حية' : '1 Live Match') : (LANG === 'ar' ? 'مباراة منتهية' : 'Match Finished')) : (LANG === 'ar' ? 'لا توجد مباريات' : 'No matches')
       if (m) {
         const hName = LANG === 'ar' ? (m.homeClub?.name_ar || 'Home') : (m.homeClub?.name_en || 'Home')
         const aName = LANG === 'ar' ? (m.awayClub?.name_ar || 'Away') : (m.awayClub?.name_en || 'Away')
-        mList.innerHTML = `<div style="padding:18px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div>
-          <div style="font-size:14px;font-weight:700">${hName} vs ${aName}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${m.tournament}</div>
-        </div>
-        <span class="status-tag ${m.status}">${m.status === 'live' ? tr.statusLive : tr.statusFinished}</span>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="text-align:center">
-          <div style="font-size:12px;color:var(--text2);margin-bottom:4px">${hName}</div>
-          <div style="font-size:38px;font-weight:900;color:var(--teal);font-variant-numeric:tabular-nums">
-            ${m.currentHomeScore}<span style="font-size:16px;margin-inline-start:6px;color:var(--text3)">(${m.homeSets})</span>
-          </div>
-        </div>
-        <div style="font-size:28px;color:var(--text3);font-weight:200">:</div>
-        <div style="text-align:center">
-          <div style="font-size:12px;color:var(--text2);margin-bottom:4px">${aName}</div>
-          <div style="font-size:38px;font-weight:900;color:var(--blue);font-variant-numeric:tabular-nums">
-            ${m.currentAwayScore}<span style="font-size:16px;margin-inline-start:6px;color:var(--text3)">(${m.awaySets})</span>
-          </div>
-        </div>
-      </div>
-      <button onclick="navigate('detail','${m.id}')"
-        style="width:100%;padding:10px;background:var(--surface2);color:var(--teal);border:1px solid var(--border2);
-               border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600;transition:var(--tr)">
-        ${tr.viewDetail}
-      </button>
-    </div>`
+        mList.innerHTML = `<div style="padding:18px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div><div style="font-size:14px;font-weight:700">${hName} vs ${aName}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${m.tournament}</div></div><span class="status-tag ${m.status}">${m.status === 'live' ? tr.statusLive : tr.statusFinished}</span></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div style="text-align:center"><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${hName}</div><div style="font-size:38px;font-weight:900;color:var(--teal);font-variant-numeric:tabular-nums">${m.currentHomeScore}<span style="font-size:16px;margin-inline-start:6px;color:var(--text3)">(${m.homeSets})</span></div></div><div style="font-size:28px;color:var(--text3);font-weight:200">:</div><div style="text-align:center"><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${aName}</div><div style="font-size:38px;font-weight:900;color:var(--blue);font-variant-numeric:tabular-nums">${m.currentAwayScore}<span style="font-size:16px;margin-inline-start:6px;color:var(--text3)">(${m.awaySets})</span></div></div></div><button onclick="navigate('detail','${m.id}')" style="width:100%;padding:10px;background:var(--surface2);color:var(--teal);border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600;transition:var(--tr)">${tr.viewDetail}</button></div>`
       } else {
         mList.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">${tr.dashNoMatch}</div>`
       }
-
-      // Type breakdown
       const typeGrid = document.getElementById('type-breakdown-grid')
       typeGrid.innerHTML = Object.keys(PT_META).map(id => {
         const h = events.filter(e => e.scoring_side === 'home' && e.point_type === id).length
         const a = events.filter(e => e.scoring_side === 'away' && e.point_type === id).length
         const pt = PT_META[id]
-        return `<div style="display:flex;align-items:center;gap:10px;font-size:12px">
-      <div style="width:22px;height:22px;border-radius:6px;background:${pt.bg};display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">
-        <span style="color:${pt.color}">${pt.icon}</span>
-      </div>
-      <span style="flex:1;color:var(--text2)">${ptLabel(id)}</span>
-      <span style="font-weight:700;color:${pt.color};font-variant-numeric:tabular-nums">${h + a}</span>
-    </div>`
+        return `<div style="display:flex;align-items:center;gap:10px;font-size:12px"><div style="width:22px;height:22px;border-radius:6px;background:${pt.bg};display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0"><span style="color:${pt.color}">${pt.icon}</span></div><span style="flex:1;color:var(--text2)">${ptLabel(id)}</span><span style="font-weight:700;color:${pt.color};font-variant-numeric:tabular-nums">${h + a}</span></div>`
       }).join('')
-
-      // Activity feed
       const feedList = document.getElementById('activity-feed-list')
       const feedEmpty = document.getElementById('feed-empty')
       if (APP.activityFeed.length) {
         document.getElementById('feed-count').textContent = tr.feedCount(APP.activityFeed.length)
-        feedList.innerHTML = APP.activityFeed.map(a => `
-      <div class="af-item">
-        <div class="af-dot" style="background:${a.color}"></div>
-        <div class="af-text">${a.text}</div>
-        <div class="af-time">${a.time}</div>
-      </div>`).join('')
+        feedList.innerHTML = APP.activityFeed.map(a => `<div class="af-item"><div class="af-dot" style="background:${a.color}"></div><div class="af-text">${a.text}</div><div class="af-time">${a.time}</div></div>`).join('')
       } else {
         feedList.innerHTML = `<div id="feed-empty" style="padding:20px;text-align:center;color:var(--text3);font-size:13px">${tr.feedEmpty}</div>`
       }
-    }
-
-    /* ── Standings ───────────────────────────────────────────── */
-
-    // All finished matches from Firestore (set by global sync)
-    window.standingsMatches = []
-
-    // Populate tournament / gender / ageGroup filters from real match data
-    function refreshStandingsFilters() {
-      const tourSel = document.getElementById('standings-tournament-filter')
-      const genSel  = document.getElementById('standings-gender-filter')
-      const ageSel  = document.getElementById('standings-agegroup-filter')
-      if (!tourSel || !genSel || !ageSel) return
-
-      const tours = new Set(), genders = new Set(), ages = new Set()
-      window.standingsMatches.forEach(m => {
-        if (m.tournament) tours.add(m.tournament)
-        if (m.gender)     genders.add(m.gender)
-        if (m.ageGroup)   ages.add(m.ageGroup)
-      })
-
-      const tr = T()
-      const prevTour = tourSel.value, prevGen = genSel.value, prevAge = ageSel.value
-
-      tourSel.innerHTML = `<option value="">${tr.standingsAllTournaments}</option>` +
-        [...tours].sort().map(v => `<option value="${v}" ${v === prevTour ? 'selected' : ''}>${v}</option>`).join('')
-      genSel.innerHTML = `<option value="">${tr.standingsAllGenders}</option>` +
-        [...genders].sort().map(v => `<option value="${v}" ${v === prevGen ? 'selected' : ''}>${v}</option>`).join('')
-      ageSel.innerHTML = `<option value="">${tr.standingsAllAge}</option>` +
-        [...ages].sort().map(v => `<option value="${v}" ${v === prevAge ? 'selected' : ''}>${v}</option>`).join('')
-    }
-
-    function onStandingsFilterChange() {
-      renderStandings()
     }
 
     function renderStandings() {
       const tr = T()
       const head = document.getElementById('standings-head')
       const body = document.getElementById('standings-body')
-      const loadingEl = document.getElementById('standings-loading')
-      const tableEl = document.getElementById('standings-table-wrap')
-
-      head.innerHTML = `<tr>
-    <th>#</th><th>${tr.standingsClub}</th><th>${tr.standingsPlayed}</th>
-    <th>${tr.standingsWon}</th><th>${tr.standingsLost}</th>
-    <th>${tr.standingsSW}</th><th>${tr.standingsSL}</th>
-    <th>${tr.standingsSets}</th><th>${tr.standingsPts}</th><th>${tr.standingsForm}</th>
-  </tr>`
-
-      // Apply filters — match on tournament, gender, ageGroup (real Firestore fields)
+      head.innerHTML = `<tr><th>#</th><th>${tr.standingsClub}</th><th>${tr.standingsPlayed}</th><th>${tr.standingsWon}</th><th>${tr.standingsLost}</th><th>${tr.standingsSW}</th><th>${tr.standingsSL}</th><th>${tr.standingsSets}</th><th>${tr.standingsPts}</th><th>${tr.standingsForm}</th></tr>`
       const tourFilter = (document.getElementById('standings-tournament-filter')?.value || '')
-      const genFilter  = (document.getElementById('standings-gender-filter')?.value || '')
-      const ageFilter  = (document.getElementById('standings-agegroup-filter')?.value || '')
-
+      const genFilter = (document.getElementById('standings-gender-filter')?.value || '')
+      const ageFilter = (document.getElementById('standings-agegroup-filter')?.value || '')
       const filtered = window.standingsMatches.filter(m => {
         if (tourFilter && (m.tournament || '') !== tourFilter) return false
-        if (genFilter  && (m.gender    || '') !== genFilter)  return false
-        if (ageFilter  && (m.ageGroup  || '') !== ageFilter)  return false
+        if (genFilter && (m.gender || '') !== genFilter) return false
+        if (ageFilter && (m.ageGroup || '') !== ageFilter) return false
         return true
       })
-
-      // If no data loaded yet, show loading or empty
       if (filtered.length === 0) {
         body.innerHTML = `<tr><td colspan="10" style="padding:40px;text-align:center;color:var(--text3);font-size:13px">${tr.standingsNoData}</td></tr>`
         return
       }
-
-      // Build standings map per team
-      const teamMap = {}  // key: teamName (canonical)
-
+      const teamMap = {}
       filtered.forEach(match => {
         const hClub = match.homeClub || match.home || {}
         const aClub = match.awayClub || match.away || {}
         const hName = LANG === 'ar' ? (hClub.name_ar || hClub.name_en || 'Home') : (hClub.name_en || hClub.name_ar || 'Home')
         const aName = LANG === 'ar' ? (aClub.name_ar || aClub.name_en || 'Away') : (aClub.name_en || aClub.name_ar || 'Away')
-
-        // Ensure entries exist
         if (!teamMap[hName]) teamMap[hName] = { name: hName, played: 0, won: 0, lost: 0, setsWon: 0, setsLost: 0, pts: 0, form: [] }
         if (!teamMap[aName]) teamMap[aName] = { name: aName, played: 0, won: 0, lost: 0, setsWon: 0, setsLost: 0, pts: 0, form: [] }
-
-        const hT = teamMap[hName]
-        const aT = teamMap[aName]
-
-        // Determine sets won from setScores (authoritative) or homeSets/awaySets
+        const hT = teamMap[hName], aT = teamMap[aName]
         let hSets = 0, aSets = 0
         if (typeof match.homeSets === 'number' && typeof match.awaySets === 'number') {
-          hSets = match.homeSets
-          aSets = match.awaySets
+          hSets = match.homeSets; aSets = match.awaySets
         } else if (Array.isArray(match.setScores)) {
-          match.setScores.forEach(s => {
-            if (s.finished) { s.home > s.away ? hSets++ : aSets++ }
-          })
+          match.setScores.forEach(s => { if (s.finished) { s.home > s.away ? hSets++ : aSets++ } })
         }
-
-        // Volleyball scoring rules:
-        // Win 3-0 or 3-1 → 3 pts (winner), 0 pts (loser)
-        // Win 3-2        → 2 pts (winner), 1 pt  (loser)
         let hPts = 0, aPts = 0
-        if (hSets > aSets) {
-          // Home wins
-          hPts = (hSets === 3 && aSets === 2) ? 2 : 3
-          aPts = (hSets === 3 && aSets === 2) ? 1 : 0
-          hT.won++; aT.lost++
-          hT.form.push('W'); aT.form.push('L')
-        } else if (aSets > hSets) {
-          // Away wins
-          aPts = (aSets === 3 && hSets === 2) ? 2 : 3
-          hPts = (aSets === 3 && hSets === 2) ? 1 : 0
-          aT.won++; hT.lost++
-          aT.form.push('W'); hT.form.push('L')
-        } else {
-          // Draw (shouldn't happen in volleyball but handle gracefully)
-          hPts = 1; aPts = 1
-          hT.form.push('L'); aT.form.push('L')
-        }
-
-        hT.played++; aT.played++
-        hT.setsWon += hSets; hT.setsLost += aSets
-        aT.setsWon += aSets; aT.setsLost += hSets
-        hT.pts += hPts; aT.pts += aPts
+        if (hSets > aSets) { hPts = (hSets === 3 && aSets === 2) ? 2 : 3; aPts = (hSets === 3 && aSets === 2) ? 1 : 0; hT.won++; aT.lost++; hT.form.push('W'); aT.form.push('L') }
+        else if (aSets > hSets) { aPts = (aSets === 3 && hSets === 2) ? 2 : 3; hPts = (aSets === 3 && hSets === 2) ? 1 : 0; aT.won++; hT.lost++; aT.form.push('W'); hT.form.push('L') }
+        else { hPts = 1; aPts = 1; hT.form.push('L'); aT.form.push('L') }
+        hT.played++; aT.played++; hT.setsWon += hSets; hT.setsLost += aSets; aT.setsWon += aSets; aT.setsLost += hSets; hT.pts += hPts; aT.pts += aPts
       })
-
-      // Sort: Pts DESC → Sets ratio DESC → Sets Won DESC
       const rows = Object.values(teamMap).sort((a, b) => {
         if (b.pts !== a.pts) return b.pts - a.pts
         const aRatio = a.setsLost ? a.setsWon / a.setsLost : a.setsWon
@@ -2364,100 +2243,121 @@ border:1px solid var(--border2)"></div>
         if (bRatio !== aRatio) return bRatio - aRatio
         return b.setsWon - a.setsWon
       })
-
       body.innerHTML = rows.map((team, i) => {
         const rc = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn'
-        // Show last 5 matches form
         const recentForm = team.form.slice(-5)
-        const formHTML = recentForm.map(f =>
-          f === 'W' ? `<div class="sf-w">${tr.formW}</div>` : `<div class="sf-l">${tr.formL}</div>`
-        ).join('')
+        const formHTML = recentForm.map(f => f === 'W' ? `<div class="sf-w">${tr.formW}</div>` : `<div class="sf-l">${tr.formL}</div>`).join('')
         const setsRatio = `${team.setsWon}/${team.setsLost}`
-        return `<tr>
-      <td><div class="st-rank ${rc}">${i + 1}</div></td>
-      <td style="font-weight:600">${team.name}</td>
-      <td>${team.played}</td>
-      <td style="color:var(--teal);font-weight:600">${team.won}</td>
-      <td style="color:var(--red)">${team.lost}</td>
-      <td style="color:var(--teal)">${team.setsWon}</td>
-      <td style="color:var(--red)">${team.setsLost}</td>
-      <td style="color:var(--text2)">${setsRatio}</td>
-      <td style="font-weight:700;font-size:15px">${team.pts}</td>
-      <td><div class="st-form">${formHTML}</div></td>
-    </tr>`
+        return `<tr><td><div class="st-rank ${rc}">${i + 1}</div></td><td style="font-weight:600">${team.name}</td><td>${team.played}</td><td style="color:var(--teal);font-weight:600">${team.won}</td><td style="color:var(--red)">${team.lost}</td><td style="color:var(--teal)">${team.setsWon}</td><td style="color:var(--red)">${team.setsLost}</td><td style="color:var(--text2)">${setsRatio}</td><td style="font-weight:700;font-size:15px">${team.pts}</td><td><div class="st-form">${formHTML}</div></td></tr>`
       }).join('')
     }
 
-    /* ── Firestore: Listen to a single match ────────────────────*/
-    // ✅ FIX 12: listenToMatch returns the unsubscribe function
-    function listenToMatch(matchId) {
-      if (!window.db || !window.docFirebaseDB) { console.warn('Firebase not ready'); return () => { } }
-
-      let unsubMatch = () => { }
-      let unsubEvents = () => { }
-
-      // Listen to match document
-      const matchRef = window.docFirebaseDB(window.db, 'matches', matchId)
-      unsubMatch = window.onSnapshotFirebaseDB(matchRef, snap => {
-        if (snap.exists()) {
-          matchData = { id: snap.id, ...snap.data() }
-          window.lastHeartbeat = String(matchData.lastHeartbeat || Date.now())
-          pollReferee()
-        } else {
-          console.warn('Match not found:', matchId)
-        }
-      }, err => console.error('Match listener error:', err))
-
-      // Listen to events sub-collection
-      try {
-        const eventsRef = window.collectionFirebaseDB(window.db, 'matches', matchId, 'events')
-        const eventsQuery = window.queryFirebaseDB(eventsRef, window.orderByFirebaseDB('recorded_at', 'asc'))
-        unsubEvents = window.onSnapshotFirebaseDB(eventsQuery, snap => {
-          window.eventsData = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => !e.undone)
-          window.lastHeartbeat = String(Date.now())
-          APP.lastEventCount = 0  // reset so feed picks up all events on reload
-          pollReferee()
-        }, err => console.error('Events listener error:', err))
-      } catch (e) { console.warn('Events sub-collection not available', e) }
-
-      // Return combined unsubscribe
-      return () => { unsubMatch(); unsubEvents() }
+    /* ── Schedule ─────────────────────────────────────────────── */
+    window.allMatches = []
+    function renderSchedule() {
+      const tr = T()
+      document.getElementById('schedule-title').textContent = tr.scheduleTitle
+      document.getElementById('sch-live-lbl').textContent = tr.schLive
+      document.getElementById('sch-done-lbl').textContent = tr.schDone
+      document.getElementById('schedule-empty-txt').textContent = tr.scheduleEmpty
+      const tourFilter = document.getElementById('sch-tournament-filter')?.value || ''
+      const all = window.allMatches
+      const tours = new Set(all.map(m => m.tournament).filter(Boolean))
+      const sel = document.getElementById('sch-tournament-filter')
+      if (sel) {
+        const prev = sel.value
+        sel.innerHTML = `<option value="">${tr.statsFilter === 'Filter by Tournament' ? 'All Tournaments' : 'كل البطولات'}</option>` + [...tours].sort().map(t => `<option value="${t}" ${t === prev ? 'selected' : ''}>${t}</option>`).join('')
+      }
+      const filtered = tourFilter ? all.filter(m => m.tournament === tourFilter) : all
+      const live = filtered.filter(m => m.status === 'live')
+      const done = filtered.filter(m => m.status === 'finished')
+      const liveGrp = document.getElementById('schedule-live-group')
+      const doneGrp = document.getElementById('schedule-done-group')
+      const empty = document.getElementById('schedule-empty')
+      liveGrp.style.display = live.length ? '' : 'none'
+      doneGrp.style.display = done.length ? '' : 'none'
+      empty.style.display = (!live.length && !done.length) ? '' : 'none'
+      const mkCard = (m) => {
+        const hn = LANG === 'ar' ? (m.home?.name_ar || '') : (m.home?.name_en || '')
+        const an = LANG === 'ar' ? (m.away?.name_ar || '') : (m.away?.name_en || '')
+        const isLive = m.status === 'live', isDone = m.status === 'finished'
+        const score = isDone ? `<span style="font-size:18px;font-weight:900">${m.homeSets ?? 0} <span style="color:var(--text3)">&ndash;</span> ${m.awaySets ?? 0}</span>` : isLive ? `<span style="color:var(--red);font-size:12px;font-weight:700;animation:pulse 1s infinite">● LIVE</span>` : ''
+        const badge = isDone ? `<span class="sch-badge" style="background:var(--surface2);color:var(--text3)">${tr.statusFinished}</span>` : isLive ? `<span class="sch-badge" style="background:#3b0000;color:#f87171">${tr.statusLive}</span>` : ''
+        return `<div class="sch-card${isLive ? ' is-live' : ''}${isDone ? ' is-done' : ''}" onclick="navigate('detail','${m.id}')"><div class="sch-teams"><div>${hn} <span style="color:var(--text3)">vs</span> ${an}</div><div class="sch-meta">${m.tournament || ''} ${m.gender ? '· ' + m.gender : ''} ${m.ageGroup ? '· ' + m.ageGroup : ''}</div></div><div>${score}</div><div>${badge}</div></div>`
+      }
+      document.getElementById('schedule-live-list').innerHTML = live.map(mkCard).join('')
+      document.getElementById('schedule-done-list').innerHTML = done.map(mkCard).join('')
     }
 
-    /* ── Firestore: Global live matches sync ────────────────────*/
-    window.initFirestoreSync = function () {
-      if (!window.db) return
-
-      const matchesRef = window.collectionFirebaseDB(window.db, 'matches')
-
-      // Live matches
-      const liveQ = window.queryFirebaseDB(matchesRef, window.whereFirebaseDB('status', '==', 'live'))
-      window.onSnapshotFirebaseDB(liveQ, snap => {
-        window.currentLiveMatches = snap.docs
-          .map(d => buildMatch({ id: d.id, ...d.data() }))
-          .filter(Boolean)
-        renderHome(window.currentLiveMatches)
-
-        // KPI update
-        const kpiLive = document.getElementById('kpi-live')
-        if (kpiLive) kpiLive.textContent = window.currentLiveMatches.length
-      })
-
-      // Finished matches (history + standings)
-      const doneQ = window.queryFirebaseDB(matchesRef, window.whereFirebaseDB('status', '==', 'finished'))
-      window.onSnapshotFirebaseDB(doneQ, snap => {
-        window.historyMatches = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        // Update standings data source
-        window.standingsMatches = window.historyMatches
-        refreshStandingsFilters()
-        if (APP.currentView === 'standings') renderStandings()
-        renderHome(window.currentLiveMatches)
-      })
-
-      // Auto-open detail if URL has matchId
-      if (URL_MATCH_ID) {
-        navigate('detail', URL_MATCH_ID)
+    /* ── Player Stats ─────────────────────────────────────────── */
+    function renderPlayerStats() {
+      const tr = T()
+      document.getElementById('stats-page-title').textContent = tr.statsTitle
+      document.getElementById('top-scorers-title').textContent = tr.topScorersTitle
+      document.getElementById('pt-breakdown-title').textContent = tr.ptBreakdownTitle
+      const tourFilter = document.getElementById('stats-tournament-filter')?.value || ''
+      const all = window.allMatches
+      const tours = new Set(all.map(m => m.tournament).filter(Boolean))
+      const sel = document.getElementById('stats-tournament-filter')
+      if (sel) {
+        const prev = sel.value
+        sel.innerHTML = `<option value="">${tr.statsFilter === 'Filter by Tournament' ? 'All Tournaments' : 'كل البطولات'}</option>` + [...tours].sort().map(t => `<option value="${t}" ${t === prev ? 'selected' : ''}>${t}</option>`).join('')
       }
+      const events = (window.allEvents || []).filter(e => !e.undone && !e.is_timeout && !e.is_sub && !e.is_sanction)
+      const filtered = tourFilter ? events.filter(e => { const m = all.find(x => x.id === e.matchId); return m && m.tournament === tourFilter }) : events
+      const playerMap = {}
+      filtered.forEach(e => {
+        if (!e.player_num) return
+        const m = all.find(x => x.id === e.matchId)
+        const side = e.scoring_side
+        const teamObj = m ? m[side] : null
+        const teamName = teamObj ? (LANG === 'ar' ? teamObj.name_ar : teamObj.name_en) : (e.matchId || '')
+        const key = `${e.matchId}_${side}_${e.player_num}`
+        if (!playerMap[key]) playerMap[key] = { num: e.player_num, team: teamName, pts: 0, attack: 0, ace: 0, block: 0, dig: 0 }
+        playerMap[key].pts++
+        if (e.point_type === 'attack') playerMap[key].attack++
+        if (e.point_type === 'serve_ace') playerMap[key].ace++
+        if (e.point_type === 'block') playerMap[key].block++
+        if (e.point_type === 'dig') playerMap[key].dig++
+      })
+      const players = Object.values(playerMap).sort((a, b) => b.pts - a.pts).slice(0, 20)
+      const head = document.getElementById('lb-head'), body = document.getElementById('lb-body'), sub = document.getElementById('top-scorers-sub')
+      if (sub) sub.textContent = tr.topScorersNote(players.length)
+      head.innerHTML = `<tr><th>#</th><th>${tr.lbPlayer}</th><th>${tr.lbTeam}</th><th>${tr.lbPts}</th><th>${tr.lbAttack}</th><th>${tr.lbAce}</th><th>${tr.lbBlock}</th><th>${tr.lbDig}</th></tr>`
+      if (!players.length) {
+        body.innerHTML = `<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No data.</td></tr>`
+      } else {
+        body.innerHTML = players.map((p, i) => {
+          const medalClass = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn'
+          const medal = `<span class="lb-medal ${medalClass}">${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span>`
+          return `<tr><td>${medal}</td><td>#${p.num}</td><td style="color:var(--text3)">${p.team}</td><td style="font-weight:900;color:var(--teal)">${p.pts}</td><td>${p.attack || '-'}</td><td>${p.ace || '-'}</td><td>${p.block || '-'}</td><td>${p.dig || '-'}</td></tr>`
+        }).join('')
+      }
+      const typeCount = {}
+      filtered.forEach(e => { const t = e.point_type || 'point'; typeCount[t] = (typeCount[t] || 0) + 1 })
+      const total = filtered.length || 1
+      const colors = { attack: '#f97316', serve_ace: '#facc15', block: '#38bdf8', opponent_error: '#f87171', dig: '#4ade80', point: '#94a3b8', other: '#64748b' }
+      const labels = { attack: tr.lbAttack, serve_ace: tr.lbAce, block: tr.lbBlock, opponent_error: 'Error', dig: tr.lbDig, point: 'Direct', other: 'Other' }
+      const brk = document.getElementById('pt-breakdown-body')
+      brk.innerHTML = Object.entries(typeCount).sort((a, b) => b[1] - a[1]).map(([type, cnt]) => {
+        const pct = Math.round(cnt / total * 100)
+        const col = colors[type] || '#94a3b8'
+        return `<div><div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px"><span style="color:${col};font-weight:600">${labels[type] || type}</span><span style="color:var(--text3)">${cnt} pts &nbsp; ${pct}%</span></div><div style="height:6px;border-radius:3px;background:var(--surface2)"><div style="height:6px;border-radius:3px;background:${col};width:${pct}%;transition:width .5s"></div></div></div>`
+      }).join('')
+    }
+
+    /* ── Print Scoresheet ───────────────────────────────────────── */
+    function printScoresheet() {
+      const m = APP.lastRenderedMatch
+      if (!m) return
+      const tr = T()
+      const hn = LANG === 'ar' ? (m.home?.name_ar || '') : (m.home?.name_en || '')
+      const an = LANG === 'ar' ? (m.away?.name_ar || '') : (m.away?.name_en || '')
+      const sets = m.setScores || []
+      const evts = (window.eventsData || []).filter(e => !e.undone)
+      const sheet = document.getElementById('print-sheet')
+      sheet.innerHTML = `<div class="ps-header"><div class="ps-title">${tr.scoresheetTitle}</div><div style="font-size:11px;text-align:right">${m.tournament || ''} &nbsp;|&nbsp; ${m.gender || ''} ${m.ageGroup || ''}<br>${new Date().toLocaleDateString()}</div></div><div class="ps-score-grid"><div><div class="ps-team-name" style="color:#14b8a6">${hn}</div></div><div><div class="ps-sets-score">${m.homeSets ?? 0} &ndash; ${m.awaySets ?? 0}</div><div style="font-size:11px;color:#666;margin-top:4px">Sets Won</div></div><div><div class="ps-team-name" style="color:#3b82f6">${an}</div></div></div><table class="ps-sets-table"><thead><tr><th>Set</th><th>${hn}</th><th>${an}</th><th>Winner</th></tr></thead><tbody>${sets.filter(s => s.finished).map(s => `<tr><td>Set ${s.num}</td><td><b>${s.home}</b></td><td><b>${s.away}</b></td><td>${s.home > s.away ? hn : an}</td></tr>`).join('')}</tbody></table><table class="ps-events-table"><thead><tr><th>Set</th><th>Team</th><th>Type</th><th>Score After</th></tr></thead><tbody>${evts.slice(-50).map(e => `<tr><td>${e.set_num}</td><td>${e.scoring_side === 'home' ? hn : an}</td><td>${e.point_type}</td><td>${e.home_score_after}–${e.away_score_after}</td></tr>`).join('')}</tbody></table>`
+      window.print()
     }
 
     /* ── Toast ───────────────────────────────────────────────── */
@@ -2473,10 +2373,11 @@ border:1px solid var(--border2)"></div>
     updateStaticText()
     renderHome([])
     renderStandings()
+    renderSchedule()
+    renderPlayerStats()
 
     APP.pollInterval = setInterval(pollReferee, 2000)
 
-    // Show relevant tabs based on role
     const isAdmin = sessionStorage.getItem('xura_admin') || localStorage.getItem('xura_admin');
     const isRef = sessionStorage.getItem('xura_referee') || localStorage.getItem('xura_referee');
 
