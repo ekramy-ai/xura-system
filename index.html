@@ -1399,10 +1399,15 @@
         <div class="sec-hd" style="margin-bottom:20px">
           <h2 id="standings-title"></h2>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="standings-category-filter"
+            <select id="standings-tournament-filter"
               style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r);font-size:13px"
               onchange="onStandingsFilterChange()">
-              <option value="">All Categories</option>
+              <option value="">All Tournaments</option>
+            </select>
+            <select id="standings-gender-filter"
+              style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r);font-size:13px"
+              onchange="onStandingsFilterChange()">
+              <option value="">All Genders</option>
             </select>
             <select id="standings-agegroup-filter"
               style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r);font-size:13px"
@@ -1593,7 +1598,7 @@ border:1px solid var(--border2)"></div>
         standingsPts: 'Pts', standingsForm: 'Form', standingsSW: 'SW', standingsSL: 'SL',
         standingsNoData: 'No finished matches found for this filter.',
         standingsLoading: 'Loading standings…',
-        standingsAllCat: 'All Categories', standingsAllAge: 'All Age Groups',
+        standingsAllTournaments: 'All Tournaments', standingsAllGenders: 'All Genders', standingsAllAge: 'All Age Groups',
         formW: 'W', formL: 'L',
         pointTypes: { point: 'Point', attack: 'Attack', serve_ace: 'Ace', block: 'Block', opponent_error: 'Opp. Error', dig: 'Dig', other: 'Other' },
         today: 'Today', setsLabel: 'Sets',
@@ -1631,7 +1636,7 @@ border:1px solid var(--border2)"></div>
         standingsPts: 'نقاط', standingsForm: 'الشكل', standingsSW: 'أ+', standingsSL: 'أ-',
         standingsNoData: 'لا توجد مباريات منتهية لهذا الفلتر.',
         standingsLoading: 'جارٍ تحميل الترتيب…',
-        standingsAllCat: 'كل الفئات', standingsAllAge: 'كل الأعمار',
+        standingsAllTournaments: 'كل البطولات', standingsAllGenders: 'كل الفئات', standingsAllAge: 'كل الأعمار',
         formW: 'ف', formL: 'خ',
         pointTypes: { point: 'نقطة', attack: 'ضرب', serve_ace: 'إيس', block: 'كتلة', opponent_error: 'خطأ خصم', dig: 'استقبال', other: 'أخرى' },
         today: 'اليوم', setsLabel: 'أشواط',
@@ -1694,9 +1699,11 @@ border:1px solid var(--border2)"></div>
       document.getElementById('detail-nomatch-txt').textContent = tr.detailNoMatch
       document.getElementById('detail-nomatch-btn').textContent = tr.detailNoMatchBtn
       // Update filter placeholders
-      const catSel = document.getElementById('standings-category-filter')
+      const tourSel = document.getElementById('standings-tournament-filter')
+      const genSel = document.getElementById('standings-gender-filter')
       const ageSel = document.getElementById('standings-agegroup-filter')
-      if (catSel) catSel.options[0].textContent = tr.standingsAllCat
+      if (tourSel) tourSel.options[0].textContent = tr.standingsAllTournaments
+      if (genSel) genSel.options[0].textContent = tr.standingsAllGenders
       if (ageSel) ageSel.options[0].textContent = tr.standingsAllAge
       const loadTxt = document.getElementById('standings-loading-txt')
       if (loadTxt) loadTxt.textContent = tr.standingsLoading
@@ -2233,24 +2240,29 @@ border:1px solid var(--border2)"></div>
     // All finished matches from Firestore (set by global sync)
     window.standingsMatches = []
 
-    // Populate category & age group filter dropdowns from match data
+    // Populate tournament / gender / ageGroup filters from real match data
     function refreshStandingsFilters() {
-      const catSel = document.getElementById('standings-category-filter')
-      const ageSel = document.getElementById('standings-agegroup-filter')
-      if (!catSel || !ageSel) return
+      const tourSel = document.getElementById('standings-tournament-filter')
+      const genSel  = document.getElementById('standings-gender-filter')
+      const ageSel  = document.getElementById('standings-agegroup-filter')
+      if (!tourSel || !genSel || !ageSel) return
 
-      const cats = new Set(), ages = new Set()
+      const tours = new Set(), genders = new Set(), ages = new Set()
       window.standingsMatches.forEach(m => {
-        if (m.category) cats.add(m.category)
-        if (m.ageGroup) ages.add(m.ageGroup)
+        if (m.tournament) tours.add(m.tournament)
+        if (m.gender)     genders.add(m.gender)
+        if (m.ageGroup)   ages.add(m.ageGroup)
       })
 
       const tr = T()
-      const prevCat = catSel.value, prevAge = ageSel.value
-      catSel.innerHTML = `<option value="">${tr.standingsAllCat}</option>` +
-        [...cats].sort().map(c => `<option value="${c}" ${c === prevCat ? 'selected' : ''}>${c}</option>`).join('')
+      const prevTour = tourSel.value, prevGen = genSel.value, prevAge = ageSel.value
+
+      tourSel.innerHTML = `<option value="">${tr.standingsAllTournaments}</option>` +
+        [...tours].sort().map(v => `<option value="${v}" ${v === prevTour ? 'selected' : ''}>${v}</option>`).join('')
+      genSel.innerHTML = `<option value="">${tr.standingsAllGenders}</option>` +
+        [...genders].sort().map(v => `<option value="${v}" ${v === prevGen ? 'selected' : ''}>${v}</option>`).join('')
       ageSel.innerHTML = `<option value="">${tr.standingsAllAge}</option>` +
-        [...ages].sort().map(a => `<option value="${a}" ${a === prevAge ? 'selected' : ''}>${a}</option>`).join('')
+        [...ages].sort().map(v => `<option value="${v}" ${v === prevAge ? 'selected' : ''}>${v}</option>`).join('')
     }
 
     function onStandingsFilterChange() {
@@ -2271,13 +2283,15 @@ border:1px solid var(--border2)"></div>
     <th>${tr.standingsSets}</th><th>${tr.standingsPts}</th><th>${tr.standingsForm}</th>
   </tr>`
 
-      // Apply filters
-      const catFilter = (document.getElementById('standings-category-filter')?.value || '').toLowerCase()
-      const ageFilter = (document.getElementById('standings-agegroup-filter')?.value || '').toLowerCase()
+      // Apply filters — match on tournament, gender, ageGroup (real Firestore fields)
+      const tourFilter = (document.getElementById('standings-tournament-filter')?.value || '')
+      const genFilter  = (document.getElementById('standings-gender-filter')?.value || '')
+      const ageFilter  = (document.getElementById('standings-agegroup-filter')?.value || '')
 
       const filtered = window.standingsMatches.filter(m => {
-        if (catFilter && (m.category || '').toLowerCase() !== catFilter) return false
-        if (ageFilter && (m.ageGroup || '').toLowerCase() !== ageFilter) return false
+        if (tourFilter && (m.tournament || '') !== tourFilter) return false
+        if (genFilter  && (m.gender    || '') !== genFilter)  return false
+        if (ageFilter  && (m.ageGroup  || '') !== ageFilter)  return false
         return true
       })
 

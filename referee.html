@@ -73,14 +73,22 @@
   .score-btn:disabled{opacity:.35;cursor:not-allowed}
 
   /* Secondary */
-  #sec-row{display:flex;gap:8px;padding:0 16px 8px;flex-shrink:0}
+  #sec-row{display:flex;gap:8px;padding:0 16px 8px;flex-shrink:0;flex-wrap:wrap}
   .sec-btn{flex:1;padding:9px;background:transparent;border:1px solid var(--surface2);
     border-radius:12px;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;
-    transition:background .1s}
+    transition:background .1s;min-width:80px}
   .sec-btn:hover{background:var(--surface)}
   .sec-btn.warning{color:var(--amber);border-color:#422006}
   #sync-btn{padding:9px 12px;background:#422006;border:1px solid #92400e;
     border-radius:12px;color:var(--amber);font-size:12px;font-family:inherit;cursor:pointer;display:none}
+  /* Time Out */
+  #timeout-row{display:flex;gap:8px;padding:0 16px 8px;flex-shrink:0}
+  .to-btn{flex:1;padding:8px 4px;border-radius:12px;border:1px solid #422006;
+    background:#1c0f04;color:var(--amber);font-size:11px;font-family:inherit;
+    cursor:pointer;transition:all .15s;text-align:center;line-height:1.3}
+  .to-btn:active{transform:scale(.94)}
+  .to-btn:disabled{opacity:.35;cursor:not-allowed}
+  .to-count{font-size:16px;font-weight:900;display:block}
 
   /* Log */
   #log-wrap{margin:0 16px 10px;border:1px solid var(--surface2);border-radius:12px;
@@ -251,6 +259,18 @@
     <button class="sec-btn warning" id="endset-btn" onclick="endSet()"></button>
     <button id="sync-btn" onclick="syncNow()"></button>
   </div>
+  <!-- Time Out Row -->
+  <div id="timeout-row">
+    <button class="to-btn" id="to-home-btn" onclick="recordTimeout('home')">
+      <span class="to-count" id="to-home-count">2</span>
+      <span id="to-home-label">Time Out</span>
+    </button>
+    <div style="display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);padding:0 6px;white-space:nowrap" id="to-label">T/O</div>
+    <button class="to-btn" id="to-away-btn" onclick="recordTimeout('away')" style="border-color:#0e1e3d;background:#050e1e;color:var(--blue)">
+      <span class="to-count" id="to-away-count">2</span>
+      <span id="to-away-label">Time Out</span>
+    </button>
+  </div>
 
   <div id="log-wrap">
     <div id="log-title"></div>
@@ -338,7 +358,6 @@ const TRANSLATIONS = {
     synced:       'Synced',
     pendingPts:   (n)=>`${n} pts pending`,
     set:          (n)=>`S${n}`,
-    // point types
     point:        'Point',
     attack:       'Attack',
     serve_ace:    'Ace',
@@ -349,6 +368,10 @@ const TRANSLATIONS = {
     selectPlayer: 'Select Player Number',
     skipPlayer:   'Skip — No Player',
     detailLabel:  'Player + Skill Details',
+    timeoutBtn:   'Time Out',
+    timeoutLabel: 'T/O per Set',
+    timeoutToast: (name) => `⏱ Time Out — ${name}`,
+    timeoutNone:  'No time outs left',
   },
   ar: {
     setLabel:     (n,t)=>`الشوط ${n} من ${t}`,
@@ -385,6 +408,10 @@ const TRANSLATIONS = {
     selectPlayer: 'اختر رقم اللاعب',
     skipPlayer:   'تخطي — بدون لاعب',
     detailLabel:  'لاعب + مهارة',
+    timeoutBtn:   'تايم أوت',
+    timeoutLabel: 'ت/أ لكل شوط',
+    timeoutToast: (name) => `⏱ تايم أوت — ${name}`,
+    timeoutNone:  'لا تايم أوت متبقية',
   }
 }
 
@@ -450,6 +477,8 @@ const S = {
   circumference: 2 * Math.PI * 16,
   detailMode: false,
   selectedPlayer: null,
+  // Time Outs: 2 per team per set
+  timeouts: { home: 2, away: 2 },
 }
 
 /* ── Offline Queue ────────────────────────────────────── */
@@ -513,6 +542,23 @@ function renderAll(){
   const disabled = S.matchDone || s.status !== 'active'
   document.getElementById('btn-home').disabled = disabled
   document.getElementById('btn-away').disabled = disabled
+
+  // Time out buttons
+  const toHome = document.getElementById('to-home-btn')
+  const toAway = document.getElementById('to-away-btn')
+  const toHomeCount = document.getElementById('to-home-count')
+  const toAwayCount = document.getElementById('to-away-count')
+  if(toHome){
+    toHomeCount.textContent = S.timeouts.home
+    toAwayCount.textContent = S.timeouts.away
+    document.getElementById('to-home-label').textContent = t('timeoutBtn')
+    document.getElementById('to-away-label').textContent = t('timeoutBtn')
+    document.getElementById('to-label').textContent = t('timeoutLabel')
+    toHome.disabled = disabled || S.timeouts.home <= 0
+    toAway.disabled = disabled || S.timeouts.away <= 0
+    toHome.style.opacity = S.timeouts.home > 0 ? '1' : '0.35'
+    toAway.style.opacity = S.timeouts.away > 0 ? '1' : '0.35'
+  }
 
   renderTabs()
   renderLog()
@@ -854,6 +900,42 @@ function undoLast(){
   syncMatchState()
 }
 
+/* ── Time Out ─────────────────────────────────────────── */
+function recordTimeout(side){
+  if(S.matchDone) return
+  const s = activeSet()
+  if(s.status !== 'active') return
+  if(S.timeouts[side] <= 0){ showToast(t('timeoutNone')); return }
+
+  S.timeouts[side]--
+
+  const name = clubName(side)
+  showToast(t('timeoutToast', name))
+
+  // Save to Firestore as a special event
+  if(window.firebaseConfigured){
+    const toId = 'to_' + Date.now() + '_' + Math.floor(Math.random()*1000)
+    window.setDocFirebaseDB(window.docFirebaseDB(window.db, 'events', toId), {
+      matchId: URL_MATCH_ID,
+      scoring_side: side,
+      point_type: 'timeout',
+      home_score_after: s.home,
+      away_score_after: s.away,
+      set_num: s.num,
+      recorded_at: new Date().toISOString(),
+      undone: false,
+      is_timeout: true,
+      timeouts_remaining: S.timeouts[side]
+    })
+    // Update match doc with timeout count
+    window.updateDocFirebaseDB(window.docFirebaseDB(window.db, 'matches', URL_MATCH_ID), {
+      [`timeouts_${side}_set${s.num}`]: S.timeouts[side]
+    })
+  }
+
+  renderAll()
+}
+
 /* ── End Set ──────────────────────────────────────────── */
 function endSet(){
   const s = activeSet()
@@ -876,6 +958,8 @@ function endSet(){
     renderAll(); showMatchOver(); return
   }
   if(S.cur < 4){ S.cur++; S.sets[S.cur].status = 'active' }
+  // Reset time outs for next set
+  S.timeouts = { home: 2, away: 2 }
   renderAll()
   showToast(t('setEnded', s.num, S.sets[S.cur].num))
   syncMatchState()
