@@ -90,6 +90,47 @@
   .to-btn:disabled{opacity:.35;cursor:not-allowed}
   .to-count{font-size:16px;font-weight:900;display:block}
 
+  /* Service Indicator */
+  #serve-bar{display:flex;align-items:center;justify-content:center;
+    padding:4px 16px 2px;gap:10px;flex-shrink:0}
+  .serve-side{flex:1;height:28px;border-radius:8px;display:flex;align-items:center;
+    justify-content:center;font-size:11px;font-weight:700;transition:all .3s;
+    border:1.5px solid transparent}
+  .serve-side.active{border-color:currentColor;background:rgba(255,255,255,.06)}
+  #serve-arrow{font-size:18px;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+  #serve-run{font-size:10px;color:var(--faint);min-width:24px;text-align:center}
+
+  /* Substitutions */
+  #sub-row{display:flex;gap:8px;padding:0 16px 4px;flex-shrink:0}
+  .sub-side{flex:1;display:flex;align-items:center;justify-content:space-between;
+    background:var(--surface);border:1px solid var(--surface2);
+    border-radius:10px;padding:5px 10px}
+  .sub-label{font-size:10px;color:var(--muted)}
+  .sub-count{font-size:15px;font-weight:900}
+  .sub-btn{padding:4px 10px;border-radius:8px;border:none;font-size:12px;
+    font-weight:700;cursor:pointer;font-family:inherit;transition:all .12s}
+  .sub-btn:active{transform:scale(.9)}
+  .sub-btn:disabled{opacity:.3;cursor:not-allowed}
+
+  /* Sanctions */
+  #sanction-row{display:flex;gap:6px;padding:0 16px 4px;flex-shrink:0}
+  .sanc-btn{flex:1;padding:6px 4px;border-radius:10px;border:none;cursor:pointer;
+    font-size:11px;font-weight:700;font-family:inherit;display:flex;
+    align-items:center;justify-content:center;gap:4px;transition:all .12s}
+  .sanc-btn:active{transform:scale(.9)}
+  .sanc-yellow{background:#422006;color:var(--amber)}
+  .sanc-red{background:#3b0000;color:#f87171}
+  #sanc-sep{display:flex;align-items:center;font-size:10px;color:var(--faint);padding:0 2px}
+
+  /* Set Timer */
+  #timer-bar{display:flex;align-items:center;justify-content:center;
+    padding:2px 16px 4px;gap:6px;flex-shrink:0}
+  #set-timer{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;
+    color:var(--muted);letter-spacing:.05em}
+  #timer-dot{width:6px;height:6px;border-radius:50%;background:var(--green);
+    animation:blink 1.2s ease infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
   /* Log */
   #log-wrap{margin:0 16px 10px;border:1px solid var(--surface2);border-radius:12px;
     overflow:hidden;flex-shrink:0}
@@ -219,6 +260,25 @@
 
   <div id="tabs"></div>
 
+  <!-- Service Indicator -->
+  <div id="serve-bar">
+    <div class="serve-side" id="serve-home" style="color:var(--teal);justify-content:flex-start;padding-inline-start:10px">
+      <span id="serve-home-name"></span>
+    </div>
+    <span id="serve-run" title="Service run">0</span>
+    <div id="serve-arrow" style="color:var(--faint)">▶</div>
+    <div class="serve-side" id="serve-away" style="color:var(--blue);justify-content:flex-end;padding-inline-end:10px">
+      <span id="serve-away-name"></span>
+    </div>
+  </div>
+
+  <!-- Set Timer -->
+  <div id="timer-bar">
+    <div id="timer-dot" style="display:none"></div>
+    <span id="set-timer">00:00</span>
+    <span style="font-size:10px;color:var(--faint)" id="timer-label"></span>
+  </div>
+
   <div id="score-area">
     <div id="scores">
       <div style="text-align:center">
@@ -270,6 +330,30 @@
       <span class="to-count" id="to-away-count">2</span>
       <span id="to-away-label">Time Out</span>
     </button>
+  </div>
+
+  <!-- Substitution Row -->
+  <div id="sub-row">
+    <div class="sub-side">
+      <span class="sub-label" id="sub-home-lbl">SUB</span>
+      <span class="sub-count" id="sub-home-count" style="color:var(--teal)">6</span>
+      <button class="sub-btn" id="sub-home-btn" onclick="recordSub('home')" style="background:var(--teal-bg);color:var(--teal)">+</button>
+    </div>
+    <span style="font-size:10px;color:var(--faint);padding:0 4px" id="sub-center-lbl">SUB</span>
+    <div class="sub-side" style="flex-direction:row-reverse">
+      <span class="sub-label" id="sub-away-lbl">SUB</span>
+      <span class="sub-count" id="sub-away-count" style="color:var(--blue)">6</span>
+      <button class="sub-btn" id="sub-away-btn" onclick="recordSub('away')" style="background:var(--blue-bg);color:var(--blue)">+</button>
+    </div>
+  </div>
+
+  <!-- Sanction Row -->
+  <div id="sanction-row">
+    <button class="sanc-btn sanc-yellow" onclick="recordSanction('home','yellow')">🟨 <span id="sanc-home-y-lbl"></span></button>
+    <button class="sanc-btn sanc-red" onclick="recordSanction('home','red')">🟥 <span id="sanc-home-r-lbl"></span></button>
+    <span id="sanc-sep">|</span>
+    <button class="sanc-btn sanc-red" onclick="recordSanction('away','red')">🟥 <span id="sanc-away-r-lbl"></span></button>
+    <button class="sanc-btn sanc-yellow" onclick="recordSanction('away','yellow')">🟨 <span id="sanc-away-y-lbl"></span></button>
   </div>
 
   <div id="log-wrap">
@@ -372,6 +456,16 @@ const TRANSLATIONS = {
     timeoutLabel: 'T/O per Set',
     timeoutToast: (name) => `⏱ Time Out — ${name}`,
     timeoutNone:  'No time outs left',
+    subBtn:       'SUB',
+    subLabel:     'Subs Left',
+    subToast:     (name,left) => `🔄 Sub — ${name} (${left} left)`,
+    subNone:      'No substitutions left',
+    sanctionYellow: 'Warning',
+    sanctionRed:    'Penalty',
+    sanctionYellowToast: (name) => `🟨 Warning — ${name}`,
+    sanctionRedToast:    (name) => `🟥 Penalty Point — ${name}`,
+    serveLabel:   'Serving',
+    timerLabel:   'Set Time',
   },
   ar: {
     setLabel:     (n,t)=>`الشوط ${n} من ${t}`,
@@ -412,6 +506,16 @@ const TRANSLATIONS = {
     timeoutLabel: 'ت/أ لكل شوط',
     timeoutToast: (name) => `⏱ تايم أوت — ${name}`,
     timeoutNone:  'لا تايم أوت متبقية',
+    subBtn:       'تبديل',
+    subLabel:     'تبديلات متبقية',
+    subToast:     (name,left) => `🔄 تبديل — ${name} (${left} متبقية)`,
+    subNone:      'لا تبديلات متبقية',
+    sanctionYellow: 'إنذار',
+    sanctionRed:    'عقوبة',
+    sanctionYellowToast: (name) => `🟨 إنذار — ${name}`,
+    sanctionRedToast:    (name) => `🟥 نقطة عقوبة — ${name}`,
+    serveLabel:   'الإرسال',
+    timerLabel:   'وقت الشوط',
   }
 }
 
@@ -479,6 +583,14 @@ const S = {
   selectedPlayer: null,
   // Time Outs: 2 per team per set
   timeouts: { home: 2, away: 2 },
+  // Substitutions: 6 per team per set (FIVB rule)
+  subs: { home: 6, away: 6 },
+  // Serving side: 'home' starts by default
+  serving: 'home',
+  serveRun: 0,
+  // Set timer
+  setStartTime: null,
+  timerInterval: null,
 }
 
 /* ── Offline Queue ────────────────────────────────────── */
@@ -546,11 +658,9 @@ function renderAll(){
   // Time out buttons
   const toHome = document.getElementById('to-home-btn')
   const toAway = document.getElementById('to-away-btn')
-  const toHomeCount = document.getElementById('to-home-count')
-  const toAwayCount = document.getElementById('to-away-count')
   if(toHome){
-    toHomeCount.textContent = S.timeouts.home
-    toAwayCount.textContent = S.timeouts.away
+    document.getElementById('to-home-count').textContent = S.timeouts.home
+    document.getElementById('to-away-count').textContent = S.timeouts.away
     document.getElementById('to-home-label').textContent = t('timeoutBtn')
     document.getElementById('to-away-label').textContent = t('timeoutBtn')
     document.getElementById('to-label').textContent = t('timeoutLabel')
@@ -558,6 +668,47 @@ function renderAll(){
     toAway.disabled = disabled || S.timeouts.away <= 0
     toHome.style.opacity = S.timeouts.home > 0 ? '1' : '0.35'
     toAway.style.opacity = S.timeouts.away > 0 ? '1' : '0.35'
+  }
+
+  // Service indicator
+  const srvHome = document.getElementById('serve-home')
+  const srvAway = document.getElementById('serve-away')
+  const srvArrow = document.getElementById('serve-arrow')
+  if(srvHome && CLUBS){
+    const hName = LANG==='ar' ? CLUBS.home.name_ar : CLUBS.home.name_en
+    const aName = LANG==='ar' ? CLUBS.away.name_ar : CLUBS.away.name_en
+    document.getElementById('serve-home-name').textContent = hName
+    document.getElementById('serve-away-name').textContent = aName
+    srvHome.classList.toggle('active', S.serving==='home')
+    srvAway.classList.toggle('active', S.serving==='away')
+    srvArrow.textContent = S.serving==='home' ? '▶' : '◀'
+    srvArrow.style.color = S.serving==='home' ? 'var(--teal)' : 'var(--blue)'
+    srvArrow.style.transform = S.serving==='home' ? 'rotate(0deg)' : 'rotate(180deg)'
+    document.getElementById('serve-run').textContent = S.serveRun > 1 ? `×${S.serveRun}` : ''
+  }
+
+  // Substitution buttons
+  if(document.getElementById('sub-home-btn')){
+    document.getElementById('sub-home-count').textContent = S.subs.home
+    document.getElementById('sub-away-count').textContent = S.subs.away
+    document.getElementById('sub-home-lbl').textContent = t('subBtn')
+    document.getElementById('sub-away-lbl').textContent = t('subBtn')
+    document.getElementById('sub-center-lbl').textContent = t('subLabel')
+    document.getElementById('sub-home-btn').disabled = disabled || S.subs.home <= 0
+    document.getElementById('sub-away-btn').disabled = disabled || S.subs.away <= 0
+  }
+
+  // Sanction labels
+  if(document.getElementById('sanc-home-y-lbl')){
+    document.getElementById('sanc-home-y-lbl').textContent = t('sanctionYellow')
+    document.getElementById('sanc-home-r-lbl').textContent = t('sanctionRed')
+    document.getElementById('sanc-away-r-lbl').textContent = t('sanctionRed')
+    document.getElementById('sanc-away-y-lbl').textContent = t('sanctionYellow')
+  }
+
+  // Timer label
+  if(document.getElementById('timer-label')){
+    document.getElementById('timer-label').textContent = t('timerLabel')
   }
 
   renderTabs()
@@ -767,6 +918,21 @@ function recordPoint(side, typeId){
   const el = document.getElementById(side==='home'?'sh':'sa')
   el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump')
 
+  // Update serving side: scorer keeps serve, loser gives it
+  const prevServing = S.serving
+  S.serving = side
+  if(S.serving === prevServing) S.serveRun++
+  else S.serveRun = 1
+
+  // Start set timer on first point
+  if(!S.setStartTime && !S.matchDone){
+    S.setStartTime = Date.now()
+    clearInterval(S.timerInterval)
+    S.timerInterval = setInterval(updateTimer, 1000)
+    const dot = document.getElementById('timer-dot')
+    if(dot) dot.style.display = 'block'
+  }
+
   const evtId = 'evt_' + Date.now() + '_' + Math.floor(Math.random()*1000);
   const evt = { id: evtId, side, type:typeId, hAfter:s.home, aAfter:s.away, setNum:s.num, undone:false }
   if(S.selectedPlayer) evt.playerNum = S.selectedPlayer
@@ -900,6 +1066,63 @@ function undoLast(){
   syncMatchState()
 }
 
+/* ── Set Timer ───────────────────────────────────────── */
+function updateTimer(){
+  if(!S.setStartTime) return
+  const elapsed = Math.floor((Date.now() - S.setStartTime) / 1000)
+  const m = String(Math.floor(elapsed/60)).padStart(2,'0')
+  const s2 = String(elapsed%60).padStart(2,'0')
+  const el = document.getElementById('set-timer')
+  if(el) el.textContent = `${m}:${s2}`
+}
+
+/* ── Substitution ─────────────────────────────────────── */
+function recordSub(side){
+  if(S.matchDone) return
+  const s = activeSet()
+  if(s.status !== 'active') return
+  if(S.subs[side] <= 0){ showToast(t('subNone')); return }
+  S.subs[side]--
+  const name = clubName(side)
+  showToast(t('subToast', name, S.subs[side]))
+  if(window.firebaseConfigured){
+    const id = 'sub_' + Date.now()
+    window.setDocFirebaseDB(window.docFirebaseDB(window.db,'events',id),{
+      matchId: URL_MATCH_ID, scoring_side: side,
+      point_type: 'substitution', set_num: s.num,
+      home_score_after: s.home, away_score_after: s.away,
+      recorded_at: new Date().toISOString(), undone: false, is_sub: true,
+      subs_remaining: S.subs[side]
+    })
+  }
+  renderAll()
+}
+
+/* ── Sanction ─────────────────────────────────────────── */
+function recordSanction(side, card){
+  if(S.matchDone) return
+  const s = activeSet()
+  const name = clubName(side)
+  if(card === 'yellow'){
+    showToast(t('sanctionYellowToast', name))
+  } else {
+    // Red card = point for opponent
+    const opp = side === 'home' ? 'away' : 'home'
+    showToast(t('sanctionRedToast', name))
+    recordPoint(opp, 'opponent_error')
+  }
+  if(window.firebaseConfigured){
+    const id = 'sanc_' + Date.now()
+    window.setDocFirebaseDB(window.docFirebaseDB(window.db,'events',id),{
+      matchId: URL_MATCH_ID, scoring_side: side,
+      point_type: card === 'yellow' ? 'yellow_card' : 'red_card',
+      set_num: s.num, home_score_after: s.home, away_score_after: s.away,
+      recorded_at: new Date().toISOString(), undone: false, is_sanction: true, card
+    })
+  }
+  if(card === 'yellow') renderAll()
+}
+
 /* ── Time Out ─────────────────────────────────────────── */
 function recordTimeout(side){
   if(S.matchDone) return
@@ -958,8 +1181,18 @@ function endSet(){
     renderAll(); showMatchOver(); return
   }
   if(S.cur < 4){ S.cur++; S.sets[S.cur].status = 'active' }
-  // Reset time outs for next set
+  // Reset per-set counters for next set
   S.timeouts = { home: 2, away: 2 }
+  S.subs     = { home: 6, away: 6 }
+  S.serveRun = 0
+  // Stop and reset timer
+  clearInterval(S.timerInterval)
+  S.timerInterval = null
+  S.setStartTime  = null
+  const timerEl = document.getElementById('set-timer')
+  if(timerEl) timerEl.textContent = '00:00'
+  const dot = document.getElementById('timer-dot')
+  if(dot) dot.style.display = 'none'
   renderAll()
   showToast(t('setEnded', s.num, S.sets[S.cur].num))
   syncMatchState()
