@@ -1398,11 +1398,25 @@
       <div id="view-standings" class="view">
         <div class="sec-hd" style="margin-bottom:20px">
           <h2 id="standings-title"></h2>
-          <select id="tourn-select"
-            style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r);font-size:13px"></select>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="standings-category-filter"
+              style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r);font-size:13px"
+              onchange="onStandingsFilterChange()">
+              <option value="">All Categories</option>
+            </select>
+            <select id="standings-agegroup-filter"
+              style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r);font-size:13px"
+              onchange="onStandingsFilterChange()">
+              <option value="">All Age Groups</option>
+            </select>
+          </div>
         </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden">
-          <table class="standings-table">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;position:relative">
+          <div id="standings-loading" style="display:none;padding:40px;text-align:center;color:var(--text3)">
+            <div style="font-size:28px;margin-bottom:12px;opacity:.4">⏳</div>
+            <p style="font-size:13px" id="standings-loading-txt">Loading standings…</p>
+          </div>
+          <table class="standings-table" id="standings-table-wrap">
             <thead id="standings-head"></thead>
             <tbody id="standings-body"></tbody>
           </table>
@@ -1576,9 +1590,10 @@ border:1px solid var(--border2)"></div>
         toWin25: 'Win at: 25 pts lead by 2', toWin15: 'Win at: 15 pts lead by 2',
         standings: 'Standings', standingsClub: 'Club', standingsPlayed: 'P',
         standingsWon: 'W', standingsLost: 'L', standingsSets: 'Sets +/-',
-        standingsPts: 'Pts', standingsForm: 'Form',
-        tournaments: ['Premier League 2024-25', 'Egypt Cup', 'Federation Cup'],
-        clubs: ['Zamalek', 'Al Ahly', 'Smouha', 'Army', 'Union', 'Petro Jet', 'Sharqia', 'Minya'],
+        standingsPts: 'Pts', standingsForm: 'Form', standingsSW: 'SW', standingsSL: 'SL',
+        standingsNoData: 'No finished matches found for this filter.',
+        standingsLoading: 'Loading standings…',
+        standingsAllCat: 'All Categories', standingsAllAge: 'All Age Groups',
         formW: 'W', formL: 'L',
         pointTypes: { point: 'Point', attack: 'Attack', serve_ace: 'Ace', block: 'Block', opponent_error: 'Opp. Error', dig: 'Dig', other: 'Other' },
         today: 'Today', setsLabel: 'Sets',
@@ -1613,9 +1628,10 @@ border:1px solid var(--border2)"></div>
         toWin25: 'للفوز: 25 نقطة بفارق 2', toWin15: 'للفوز: 15 نقطة بفارق 2',
         standings: 'جدول الترتيب', standingsClub: 'النادي', standingsPlayed: 'لعب',
         standingsWon: 'فوز', standingsLost: 'خسارة', standingsSets: 'أشواط +/-',
-        standingsPts: 'نقاط', standingsForm: 'الشكل',
-        tournaments: ['دوري الممتاز 2024-25', 'كأس مصر', 'كأس الاتحاد'],
-        clubs: ['الزمالك', 'الأهلي', 'سموحة', 'الجيش', 'الاتحاد', 'بتروجت', 'الشرقية', 'المنيا'],
+        standingsPts: 'نقاط', standingsForm: 'الشكل', standingsSW: 'أ+', standingsSL: 'أ-',
+        standingsNoData: 'لا توجد مباريات منتهية لهذا الفلتر.',
+        standingsLoading: 'جارٍ تحميل الترتيب…',
+        standingsAllCat: 'كل الفئات', standingsAllAge: 'كل الأعمار',
         formW: 'ف', formL: 'خ',
         pointTypes: { point: 'نقطة', attack: 'ضرب', serve_ace: 'إيس', block: 'كتلة', opponent_error: 'خطأ خصم', dig: 'استقبال', other: 'أخرى' },
         today: 'اليوم', setsLabel: 'أشواط',
@@ -1677,8 +1693,13 @@ border:1px solid var(--border2)"></div>
       document.getElementById('detail-loading-txt').textContent = tr.detailLoading
       document.getElementById('detail-nomatch-txt').textContent = tr.detailNoMatch
       document.getElementById('detail-nomatch-btn').textContent = tr.detailNoMatchBtn
-      const sel = document.getElementById('tourn-select')
-      sel.innerHTML = tr.tournaments.map(t => `<option>${t}</option>`).join('')
+      // Update filter placeholders
+      const catSel = document.getElementById('standings-category-filter')
+      const ageSel = document.getElementById('standings-agegroup-filter')
+      if (catSel) catSel.options[0].textContent = tr.standingsAllCat
+      if (ageSel) ageSel.options[0].textContent = tr.standingsAllAge
+      const loadTxt = document.getElementById('standings-loading-txt')
+      if (loadTxt) loadTxt.textContent = tr.standingsLoading
     }
 
     /* ── Point Types ─────────────────────────────────────────── */
@@ -2208,43 +2229,146 @@ border:1px solid var(--border2)"></div>
     }
 
     /* ── Standings ───────────────────────────────────────────── */
+
+    // All finished matches from Firestore (set by global sync)
+    window.standingsMatches = []
+
+    // Populate category & age group filter dropdowns from match data
+    function refreshStandingsFilters() {
+      const catSel = document.getElementById('standings-category-filter')
+      const ageSel = document.getElementById('standings-agegroup-filter')
+      if (!catSel || !ageSel) return
+
+      const cats = new Set(), ages = new Set()
+      window.standingsMatches.forEach(m => {
+        if (m.category) cats.add(m.category)
+        if (m.ageGroup) ages.add(m.ageGroup)
+      })
+
+      const tr = T()
+      const prevCat = catSel.value, prevAge = ageSel.value
+      catSel.innerHTML = `<option value="">${tr.standingsAllCat}</option>` +
+        [...cats].sort().map(c => `<option value="${c}" ${c === prevCat ? 'selected' : ''}>${c}</option>`).join('')
+      ageSel.innerHTML = `<option value="">${tr.standingsAllAge}</option>` +
+        [...ages].sort().map(a => `<option value="${a}" ${a === prevAge ? 'selected' : ''}>${a}</option>`).join('')
+    }
+
+    function onStandingsFilterChange() {
+      renderStandings()
+    }
+
     function renderStandings() {
       const tr = T()
       const head = document.getElementById('standings-head')
       const body = document.getElementById('standings-body')
+      const loadingEl = document.getElementById('standings-loading')
+      const tableEl = document.getElementById('standings-table-wrap')
 
       head.innerHTML = `<tr>
     <th>#</th><th>${tr.standingsClub}</th><th>${tr.standingsPlayed}</th>
     <th>${tr.standingsWon}</th><th>${tr.standingsLost}</th>
+    <th>${tr.standingsSW}</th><th>${tr.standingsSL}</th>
     <th>${tr.standingsSets}</th><th>${tr.standingsPts}</th><th>${tr.standingsForm}</th>
   </tr>`
 
-      const clubs = tr.clubs
-      // Seed a deterministic pseudo-standings from club list
-      const data = clubs.map((name, i) => {
-        const played = 8 + (i % 3)
-        const won = Math.max(0, played - i - (i % 2))
-        const lost = played - won
-        const sF = won * 3 + (i % 3)
-        const sA = lost * 3 + ((i + 1) % 3)
-        const pts = won * 3
-        const form = ['W', 'W', 'L', 'W', 'L'].map((f, j) => (j + i) % 3 === 0 ? 'L' : f)
-        return { name, played, won, lost, sF, sA, pts, form }
-      }).sort((a, b) => b.pts - a.pts || b.won - a.won)
+      // Apply filters
+      const catFilter = (document.getElementById('standings-category-filter')?.value || '').toLowerCase()
+      const ageFilter = (document.getElementById('standings-agegroup-filter')?.value || '').toLowerCase()
 
-      body.innerHTML = data.map((club, i) => {
+      const filtered = window.standingsMatches.filter(m => {
+        if (catFilter && (m.category || '').toLowerCase() !== catFilter) return false
+        if (ageFilter && (m.ageGroup || '').toLowerCase() !== ageFilter) return false
+        return true
+      })
+
+      // If no data loaded yet, show loading or empty
+      if (filtered.length === 0) {
+        body.innerHTML = `<tr><td colspan="10" style="padding:40px;text-align:center;color:var(--text3);font-size:13px">${tr.standingsNoData}</td></tr>`
+        return
+      }
+
+      // Build standings map per team
+      const teamMap = {}  // key: teamName (canonical)
+
+      filtered.forEach(match => {
+        const hClub = match.homeClub || match.home || {}
+        const aClub = match.awayClub || match.away || {}
+        const hName = LANG === 'ar' ? (hClub.name_ar || hClub.name_en || 'Home') : (hClub.name_en || hClub.name_ar || 'Home')
+        const aName = LANG === 'ar' ? (aClub.name_ar || aClub.name_en || 'Away') : (aClub.name_en || aClub.name_ar || 'Away')
+
+        // Ensure entries exist
+        if (!teamMap[hName]) teamMap[hName] = { name: hName, played: 0, won: 0, lost: 0, setsWon: 0, setsLost: 0, pts: 0, form: [] }
+        if (!teamMap[aName]) teamMap[aName] = { name: aName, played: 0, won: 0, lost: 0, setsWon: 0, setsLost: 0, pts: 0, form: [] }
+
+        const hT = teamMap[hName]
+        const aT = teamMap[aName]
+
+        // Determine sets won from setScores (authoritative) or homeSets/awaySets
+        let hSets = 0, aSets = 0
+        if (typeof match.homeSets === 'number' && typeof match.awaySets === 'number') {
+          hSets = match.homeSets
+          aSets = match.awaySets
+        } else if (Array.isArray(match.setScores)) {
+          match.setScores.forEach(s => {
+            if (s.finished) { s.home > s.away ? hSets++ : aSets++ }
+          })
+        }
+
+        // Volleyball scoring rules:
+        // Win 3-0 or 3-1 → 3 pts (winner), 0 pts (loser)
+        // Win 3-2        → 2 pts (winner), 1 pt  (loser)
+        let hPts = 0, aPts = 0
+        if (hSets > aSets) {
+          // Home wins
+          hPts = (hSets === 3 && aSets === 2) ? 2 : 3
+          aPts = (hSets === 3 && aSets === 2) ? 1 : 0
+          hT.won++; aT.lost++
+          hT.form.push('W'); aT.form.push('L')
+        } else if (aSets > hSets) {
+          // Away wins
+          aPts = (aSets === 3 && hSets === 2) ? 2 : 3
+          hPts = (aSets === 3 && hSets === 2) ? 1 : 0
+          aT.won++; hT.lost++
+          aT.form.push('W'); hT.form.push('L')
+        } else {
+          // Draw (shouldn't happen in volleyball but handle gracefully)
+          hPts = 1; aPts = 1
+          hT.form.push('L'); aT.form.push('L')
+        }
+
+        hT.played++; aT.played++
+        hT.setsWon += hSets; hT.setsLost += aSets
+        aT.setsWon += aSets; aT.setsLost += hSets
+        hT.pts += hPts; aT.pts += aPts
+      })
+
+      // Sort: Pts DESC → Sets ratio DESC → Sets Won DESC
+      const rows = Object.values(teamMap).sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts
+        const aRatio = a.setsLost ? a.setsWon / a.setsLost : a.setsWon
+        const bRatio = b.setsLost ? b.setsWon / b.setsLost : b.setsWon
+        if (bRatio !== aRatio) return bRatio - aRatio
+        return b.setsWon - a.setsWon
+      })
+
+      body.innerHTML = rows.map((team, i) => {
         const rc = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn'
-        const formHTML = club.form.map(f =>
+        // Show last 5 matches form
+        const recentForm = team.form.slice(-5)
+        const formHTML = recentForm.map(f =>
           f === 'W' ? `<div class="sf-w">${tr.formW}</div>` : `<div class="sf-l">${tr.formL}</div>`
         ).join('')
+        const setsRatio = `${team.setsWon}/${team.setsLost}`
         return `<tr>
       <td><div class="st-rank ${rc}">${i + 1}</div></td>
-      <td style="font-weight:600">${club.name}</td>
-      <td>${club.played}</td>
-      <td style="color:var(--teal);font-weight:600">${club.won}</td>
-      <td style="color:var(--red)">${club.lost}</td>
-      <td>${club.sF}/${club.sA}</td>
-      <td style="font-weight:700">${club.pts}</td>
+      <td style="font-weight:600">${team.name}</td>
+      <td>${team.played}</td>
+      <td style="color:var(--teal);font-weight:600">${team.won}</td>
+      <td style="color:var(--red)">${team.lost}</td>
+      <td style="color:var(--teal)">${team.setsWon}</td>
+      <td style="color:var(--red)">${team.setsLost}</td>
+      <td style="color:var(--text2)">${setsRatio}</td>
+      <td style="font-weight:700;font-size:15px">${team.pts}</td>
       <td><div class="st-form">${formHTML}</div></td>
     </tr>`
       }).join('')
@@ -2305,10 +2429,14 @@ border:1px solid var(--border2)"></div>
         if (kpiLive) kpiLive.textContent = window.currentLiveMatches.length
       })
 
-      // Finished matches (history)
+      // Finished matches (history + standings)
       const doneQ = window.queryFirebaseDB(matchesRef, window.whereFirebaseDB('status', '==', 'finished'))
       window.onSnapshotFirebaseDB(doneQ, snap => {
         window.historyMatches = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        // Update standings data source
+        window.standingsMatches = window.historyMatches
+        refreshStandingsFilters()
+        if (APP.currentView === 'standings') renderStandings()
         renderHome(window.currentLiveMatches)
       })
 
