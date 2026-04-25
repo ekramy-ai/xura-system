@@ -295,13 +295,66 @@
 
 <body>
 
-  <header style="display:flex; justify-content:space-between; align-items:center; padding: 20px 40px; border-bottom:1px solid var(--border)">
-    <div>
-      <h1>إدارة قاعدة بيانات XURA</h1>
-      <p>قم ببناء البطولات، الأنواع، المراحل السنية، والفرق والحكام</p>
+  <!-- Admin Nav Bar -->
+  <nav style="
+    position:sticky;top:0;z-index:99;
+    background:rgba(2,6,23,0.95);backdrop-filter:blur(16px);
+    border-bottom:1px solid rgba(51,65,85,0.5);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 24px;gap:12px">
+
+    <!-- Brand -->
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px;font-weight:900;color:#14b8a6;letter-spacing:1px">XURA</span>
+      <span style="font-size:11px;padding:2px 8px;background:#134e4a;color:#14b8a6;
+        border-radius:6px;font-weight:700">ADMIN</span>
     </div>
-    <button class="btn btn-danger" onclick="adminLogout()">تسجيل خروج</button>
-  </header>
+
+    <!-- Nav Links -->
+    <div style="display:flex;align-items:center;gap:8px">
+
+      <!-- Current Page indicator -->
+      <span style="
+        padding:7px 14px;border-radius:10px;
+        background:rgba(20,184,166,0.15);border:1px solid rgba(20,184,166,0.35);
+        color:#14b8a6;font-size:13px;font-weight:700">
+        🗄 قاعدة البيانات
+      </span>
+
+      <!-- Match Setup -->
+      <a href="match-setup.html" style="
+        padding:7px 14px;border-radius:10px;
+        background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
+        color:#3b82f6;font-size:13px;font-weight:600;text-decoration:none;
+        display:flex;align-items:center;gap:6px;transition:all .2s"
+        onmouseover="this.style.background='rgba(59,130,246,0.2)'"
+        onmouseout="this.style.background='rgba(59,130,246,0.1)'">
+        ⚙️ إعداد المباراة
+      </a>
+
+      <!-- Home -->
+      <a href="index.html" style="
+        padding:7px 14px;border-radius:10px;
+        background:rgba(51,65,85,0.3);border:1px solid rgba(51,65,85,0.5);
+        color:#94a3b8;font-size:13px;font-weight:600;text-decoration:none;
+        display:flex;align-items:center;gap:6px;transition:all .2s"
+        onmouseover="this.style.color='#f8fafc'"
+        onmouseout="this.style.color='#94a3b8'">
+        🏠 الرئيسية
+      </a>
+
+      <!-- Logout -->
+      <button onclick="adminLogout()" style="
+        padding:7px 14px;border-radius:10px;
+        background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+        color:#f87171;font-size:13px;font-weight:600;cursor:pointer;
+        font-family:inherit;transition:all .2s"
+        onmouseover="this.style.background='rgba(239,68,68,0.2)'"
+        onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+        خروج
+      </button>
+    </div>
+  </nav>
 
   <div class="container" id="app"></div>
 

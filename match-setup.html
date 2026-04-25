@@ -40,7 +40,7 @@
       --text2: #94a3b8;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 20px 20px; position: relative; }
     
     /* Background effects */
     .glow { position: fixed; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(20,184,166,0.15) 0%, rgba(0,0,0,0) 70%); top: -200px; left: -200px; z-index: -1; pointer-events: none; }
@@ -81,7 +81,63 @@
   <div class="glow"></div>
   <div class="glow2"></div>
 
-  <div class="card">
+  <!-- Admin Nav Bar -->
+  <nav id="admin-nav" style="
+    display:none;width:100%;position:sticky;top:0;z-index:99;
+    background:rgba(2,6,23,0.95);backdrop-filter:blur(16px);
+    border-bottom:1px solid rgba(51,65,85,0.5);
+    align-items:center;justify-content:space-between;
+    padding:12px 24px;gap:12px;margin-bottom:24px">
+
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px;font-weight:900;color:#14b8a6;letter-spacing:1px">XURA</span>
+      <span style="font-size:11px;padding:2px 8px;background:#134e4a;color:#14b8a6;border-radius:6px;font-weight:700">ADMIN</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px">
+      <!-- Current page -->
+      <span style="padding:7px 14px;border-radius:10px;
+        background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.35);
+        color:#3b82f6;font-size:13px;font-weight:700">
+        ⚙️ إعداد المباراة
+      </span>
+
+      <!-- DB Manager -->
+      <a href="admin-db-manager.html" style="
+        padding:7px 14px;border-radius:10px;
+        background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.3);
+        color:#14b8a6;font-size:13px;font-weight:600;text-decoration:none;
+        display:flex;align-items:center;gap:6px;transition:all .2s"
+        onmouseover="this.style.background='rgba(20,184,166,0.2)'"
+        onmouseout="this.style.background='rgba(20,184,166,0.1)'">
+        🗄 قاعدة البيانات
+      </a>
+
+      <!-- Home -->
+      <a href="index.html" style="
+        padding:7px 14px;border-radius:10px;
+        background:rgba(51,65,85,0.3);border:1px solid rgba(51,65,85,0.5);
+        color:#94a3b8;font-size:13px;font-weight:600;text-decoration:none;
+        transition:all .2s"
+        onmouseover="this.style.color='#f8fafc'"
+        onmouseout="this.style.color='#94a3b8'">
+        🏠 الرئيسية
+      </a>
+
+      <!-- Logout -->
+      <button onclick="adminLogout()" style="
+        padding:7px 14px;border-radius:10px;
+        background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+        color:#f87171;font-size:13px;font-weight:600;cursor:pointer;
+        font-family:inherit;transition:all .2s"
+        onmouseover="this.style.background='rgba(239,68,68,0.2)'"
+        onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+        خروج
+      </button>
+    </div>
+  </nav>
+
+  <div class="card" style="margin-top:16px">
     <div class="brand">
       <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8 11l3 3 5-5"/></svg>
       <h1>XURA</h1>
@@ -437,7 +493,20 @@
       }
 
       // Redirect to referee app
-      window.location.href = `xura-referee-v3.html?matchId=${matchId}`;
+      window.location.href = `referee.html?matchId=${matchId}`;
+    }
+
+    // Show admin nav if logged in as admin
+    const _isAdmin = sessionStorage.getItem('xura_admin') || localStorage.getItem('xura_admin')
+    if (_isAdmin) {
+      const nav = document.getElementById('admin-nav')
+      if (nav) nav.style.display = 'flex'
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem('xura_admin'); localStorage.removeItem('xura_admin')
+      sessionStorage.removeItem('xura_referee'); localStorage.removeItem('xura_referee')
+      window.location.href = 'index.html'
     }
 
     window.onload = init;
