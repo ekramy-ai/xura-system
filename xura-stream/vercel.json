@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    { "source": "/xura-live-v2.html", "destination": "/legacy-home.html", "permanent": true },
+    { "source": "/xura-referee-v3.html", "destination": "/referee.html", "permanent": true },
+    { "source": "/xura-referee-login.html", "destination": "/referee-login.html", "permanent": true },
+    { "source": "/xura-admin-login.html", "destination": "/admin-login.html", "permanent": true },
+    { "source": "/xura-db-manager.html", "destination": "/admin-db-manager.html", "permanent": true },
+    { "source": "/xura-match-setup.html", "destination": "/match-setup.html", "permanent": true }
+  ]
+}
