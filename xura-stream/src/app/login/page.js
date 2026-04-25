@@ -149,6 +149,12 @@ export default function LoginPage() {
         </p>
 
         <Link href="/" className={styles.backLink}>← العودة للرئيسية</Link>
+
+        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+          <a href="/admin-login.html" style={{ fontSize: '12px', color: 'var(--text3)', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            🔐 دخول المسؤول (Admin)
+          </a>
+        </div>
       </div>
     </div>
   )
