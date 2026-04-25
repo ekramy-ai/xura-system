@@ -2360,6 +2360,103 @@ border:1px solid var(--border2)"></div>
       window.print()
     }
 
+    /* ── Standings helpers ───────────────────────────────────────── */
+    window.standingsMatches = []
+    window.allMatches       = []
+    window.allEvents        = []
+
+    function refreshStandingsFilters() {
+      const tourSel = document.getElementById('standings-tournament-filter')
+      const genSel  = document.getElementById('standings-gender-filter')
+      const ageSel  = document.getElementById('standings-agegroup-filter')
+      if (!tourSel || !genSel || !ageSel) return
+      const tours = new Set(), genders = new Set(), ages = new Set()
+      window.standingsMatches.forEach(m => {
+        if (m.tournament) tours.add(m.tournament)
+        if (m.gender)     genders.add(m.gender)
+        if (m.ageGroup)   ages.add(m.ageGroup)
+      })
+      const tr = T()
+      const prevTour = tourSel.value, prevGen = genSel.value, prevAge = ageSel.value
+      tourSel.innerHTML = `<option value="">${tr.standingsAllTournaments}</option>` +
+        [...tours].sort().map(v => `<option value="${v}" ${v===prevTour?'selected':''}>${v}</option>`).join('')
+      genSel.innerHTML  = `<option value="">${tr.standingsAllGenders}</option>` +
+        [...genders].sort().map(v => `<option value="${v}" ${v===prevGen?'selected':''}>${v}</option>`).join('')
+      ageSel.innerHTML  = `<option value="">${tr.standingsAllAge}</option>` +
+        [...ages].sort().map(v => `<option value="${v}" ${v===prevAge?'selected':''}>${v}</option>`).join('')
+    }
+    function onStandingsFilterChange() { renderStandings() }
+
+    /* ── Firestore: Listen to a single match ───────────────────── */
+    function listenToMatch(matchId) {
+      if (!window.db) return () => {}
+      let unsubMatch = () => {}, unsubEvents = () => {}
+      unsubMatch = window.onSnapshotFirebaseDB(
+        window.docFirebaseDB(window.db, 'matches', matchId),
+        snap => {
+          if (snap.exists()) {
+            matchData = { id: snap.id, ...snap.data() }
+            window.lastHeartbeat = String(matchData.lastHeartbeat || Date.now())
+            pollReferee()
+          }
+        }, err => console.error('Match listener:', err)
+      )
+      try {
+        const evQ = window.queryFirebaseDB(
+          window.collectionFirebaseDB(window.db, 'matches', matchId, 'events'),
+          window.orderByFirebaseDB('recorded_at', 'asc')
+        )
+        unsubEvents = window.onSnapshotFirebaseDB(evQ, snap => {
+          window.eventsData = snap.docs.map(d=>({id:d.id,...d.data()})).filter(e=>!e.undone)
+          window.lastHeartbeat = String(Date.now())
+          APP.lastEventCount = 0
+          pollReferee()
+        }, err => console.error('Events listener:', err))
+      } catch(e) { console.warn('Events sub-collection N/A', e) }
+      return () => { unsubMatch(); unsubEvents() }
+    }
+
+    /* ── Firestore: Global sync ───────────────────────────────── */
+    window.initFirestoreSync = function () {
+      if (!window.db) return
+      const matchesRef = window.collectionFirebaseDB(window.db, 'matches')
+
+      // Live matches → home view
+      const liveQ = window.queryFirebaseDB(matchesRef, window.whereFirebaseDB('status','==','live'))
+      window.onSnapshotFirebaseDB(liveQ, snap => {
+        window.currentLiveMatches = snap.docs.map(d => buildMatch({id:d.id,...d.data()})).filter(Boolean)
+        const liveRaw = snap.docs.map(d=>({id:d.id,...d.data()}))
+        const ids = new Set(liveRaw.map(m=>m.id))
+        window.allMatches = [...(window.allMatches||[]).filter(m=>!ids.has(m.id)), ...liveRaw]
+        renderHome(window.currentLiveMatches)
+        if (APP.currentView === 'schedule') renderSchedule()
+        const kpiLive = document.getElementById('kpi-live')
+        if (kpiLive) kpiLive.textContent = window.currentLiveMatches.length
+      })
+
+      // Finished matches → standings + schedule
+      const doneQ = window.queryFirebaseDB(matchesRef, window.whereFirebaseDB('status','==','finished'))
+      window.onSnapshotFirebaseDB(doneQ, snap => {
+        window.historyMatches = snap.docs.map(d=>({id:d.id,...d.data()}))
+        window.standingsMatches = window.historyMatches
+        const ids = new Set(window.historyMatches.map(m=>m.id))
+        window.allMatches = [...(window.allMatches||[]).filter(m=>!ids.has(m.id)), ...window.historyMatches]
+        refreshStandingsFilters()
+        renderHome(window.currentLiveMatches || [])
+        if (APP.currentView === 'standings') renderStandings()
+        if (APP.currentView === 'schedule')  renderSchedule()
+        if (APP.currentView === 'stats')     renderPlayerStats()
+      })
+
+      // All events → player stats
+      window.onSnapshotFirebaseDB(window.collectionFirebaseDB(window.db, 'events'), snap => {
+        window.allEvents = snap.docs.map(d=>({id:d.id,...d.data()}))
+        if (APP.currentView === 'stats') renderPlayerStats()
+      })
+
+      if (URL_MATCH_ID) navigate('detail', URL_MATCH_ID)
+    }
+
     /* ── Toast ───────────────────────────────────────────────── */
     function toast(msg, dur = 2500) {
       const el = document.getElementById('toast')
