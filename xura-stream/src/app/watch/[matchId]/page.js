@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { doc, onSnapshot, collection, query, orderBy, limit } from 'firebase/firestore'
 import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
 import Link from 'next/link'
 import styles from './page.module.css'
 import AuthGuard from '@/components/AuthGuard'
@@ -41,9 +42,32 @@ function ScoreOverlay({ match }) {
 }
 
 /* ── Video Player ── */
-function VideoPlayer({ match }) {
+function VideoPlayer({ match, profile }) {
+  const { t } = useLanguage()
   const streamId = match?.stream_youtube_id || match?.youtube_id
   const isLive   = match?.status === 'live'
+
+  if (match?.isPremium) {
+    const isPremiumActive = profile?.subscription?.plan === 'premium' && 
+      (profile.subscription.expiresAt ? profile.subscription.expiresAt.toDate() > new Date() : true);
+    
+    if (!isPremiumActive) {
+      return (
+        <div className={styles.noStream} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r2)' }}>
+          <div className={styles.noStreamIcon}>🔒</div>
+          <div className={styles.noStreamText} style={{ color: 'var(--amber)' }}>
+            {t('paywall.title')}
+          </div>
+          <p className={styles.noStreamSub} style={{ maxWidth: 400, margin: '12px auto' }}>
+            {t('paywall.desc')}
+          </p>
+          <button className="btn btn-primary" style={{ marginTop: 16 }}>
+            {t('paywall.upgrade')}
+          </button>
+        </div>
+      )
+    }
+  }
 
   if (!streamId) {
     return (
@@ -154,7 +178,7 @@ function SetScores({ match }) {
 /* ── Main Page ── */
 export default function WatchPage() {
   const { matchId } = useParams()
-  const { user, loading: authLoading } = useAuth()
+  const { user, profile, loading: authLoading } = useAuth()
   const [match, setMatch] = useState(null)
   const [matchLoading, setMatchLoading] = useState(true)
 
@@ -200,7 +224,7 @@ export default function WatchPage() {
 
             {/* Video + Overlay */}
             <div className={styles.playerWrap}>
-              <VideoPlayer match={match} />
+              <VideoPlayer match={match} profile={profile} />
               {isLive && <ScoreOverlay match={match} />}
             </div>
 

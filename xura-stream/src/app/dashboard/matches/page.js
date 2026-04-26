@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useAuth } from '@/context/AuthContext'
 
 import { db } from '@/lib/firebase'
 import {
@@ -18,11 +19,15 @@ const EMPTY_MATCH = {
   away: { name_ar: '', color: '#3b82f6', clubId: '' },
   currentSetNum: 1,
   stream_youtube_id: '',
+  isPremium: false,
+  assignedReferee: '',
 }
 
 export default function DashboardMatchesPage() {
+  const { user, isAdmin, isReferee } = useAuth()
   const [matches, setMatches] = useState([])
   const [clubs,   setClubs]   = useState([])
+  const [referees, setReferees] = useState([])
   const [loading, setLoading] = useState(true)
   const [modal,   setModal]   = useState(null)
   const [form,    setForm]    = useState(EMPTY_MATCH)
@@ -38,7 +43,21 @@ export default function DashboardMatchesPage() {
     const u2 = onSnapshot(query(collection(db, 'clubs'), orderBy('name_ar')), s => {
       setClubs(s.docs.map(d => ({ id: d.id, ...d.data() })))
     })
-    return () => { u1(); u2() }
+    
+    // Fetch referees (join users and referees collections)
+    const u3 = onSnapshot(collection(db, 'referees'), async (refSnap) => {
+      const refIds = refSnap.docs.map(d => d.id)
+      if (refIds.length > 0) {
+        // We listen to users to get their names
+        const usersSnap = await import('firebase/firestore').then(({ getDocs }) => getDocs(collection(db, 'users')))
+        const allUsers = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+        setReferees(allUsers.filter(u => refIds.includes(u.id)))
+      } else {
+        setReferees([])
+      }
+    })
+
+    return () => { u1(); u2(); u3() }
   }, [])
 
   const openAdd = () => { setForm(EMPTY_MATCH); setEditId(null); setModal('add') }
@@ -50,6 +69,8 @@ export default function DashboardMatchesPage() {
       away: { name_ar: m.away?.name_ar || '', color: m.away?.color || '#3b82f6', clubId: m.away?.clubId || '' },
       currentSetNum: m.currentSetNum || 1,
       stream_youtube_id: m.stream_youtube_id || '',
+      isPremium: m.isPremium || false,
+      assignedReferee: m.assignedReferee || '',
     })
     setEditId(m.id); setModal('edit')
   }
@@ -79,7 +100,11 @@ export default function DashboardMatchesPage() {
     if (c) { setTeam(side, 'name_ar', c.name_ar); setTeam(side, 'color', c.colors?.primary || (side === 'home' ? '#14b8a6' : '#3b82f6')) }
   }
 
-  const filtered = matches.filter(m => filter === 'all' || m.status === filter)
+  const authorizedMatches = (isAdmin || !isReferee) 
+    ? matches 
+    : matches.filter(m => m.assignedReferee === user?.uid)
+
+  const filtered = authorizedMatches.filter(m => filter === 'all' || m.status === filter)
     .sort((a, b) => (a.status === 'live' ? -1 : 1))
 
   return (
@@ -89,7 +114,7 @@ export default function DashboardMatchesPage() {
           <h1>⚡ المباريات</h1>
           <p>إدارة جميع المباريات والبطولات</p>
         </div>
-        <button className="btn btn-primary" onClick={openAdd}>+ إضافة مباراة</button>
+        {isAdmin && <button className="btn btn-primary" onClick={openAdd}>+ إضافة مباراة</button>}
       </div>
 
       {/* Filters */}
@@ -139,12 +164,19 @@ export default function DashboardMatchesPage() {
                       </span>
                     </div>
                   </td>
-                  <td><span className={`badge ${STATUS_BADGE[m.status] || 'badge-teal'}`}>{STATUS_LABELS[m.status] || m.status}</span></td>
+                  <td>
+                    <span className={`badge ${STATUS_BADGE[m.status] || 'badge-teal'}`}>{STATUS_LABELS[m.status] || m.status}</span>
+                    {m.isPremium && <span className="badge badge-amber" style={{marginRight: 4}}>👑 حصري</span>}
+                  </td>
                   <td>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <Link href={`/referee.html?matchId=${m.id}`} className="btn btn-primary btn-sm">تحكم 🎮</Link>
-                      <button className="btn btn-ghost btn-sm" onClick={() => openEdit(m)}>تعديل</button>
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(m.id)}>حذف</button>
+                      {isAdmin && (
+                        <>
+                          <button className="btn btn-ghost btn-sm" onClick={() => openEdit(m)}>تعديل</button>
+                          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(m.id)}>حذف</button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -188,6 +220,22 @@ export default function DashboardMatchesPage() {
                 <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>
                   انسخ الكود الموجود بعد `v=` في رابط اليوتيوب
                 </p>
+              </div>
+
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>حكم المباراة</label>
+                  <select className="form-control" value={form.assignedReferee} onChange={e => setForm(f => ({ ...f, assignedReferee: e.target.value }))}>
+                    <option value="">— بدون حكم معين —</option>
+                    {referees.map(r => <option key={r.id} value={r.id}>{r.displayName} ({r.email})</option>)}
+                  </select>
+                </div>
+                <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '12px', background: 'var(--surface2)', borderRadius: 8, width: '100%', border: '1px solid var(--border)' }}>
+                    <input type="checkbox" checked={form.isPremium} onChange={e => setForm(f => ({ ...f, isPremium: e.target.checked }))} style={{ width: 18, height: 18 }} />
+                    <span>👑 مباراة مشفرة (Premium)</span>
+                  </label>
+                </div>
               </div>
 
               {/* Home team */}

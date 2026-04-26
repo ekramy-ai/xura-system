@@ -4,18 +4,21 @@ import { db } from '@/lib/firebase'
 import { collection, query, where, onSnapshot, orderBy, limit, getDocs } from 'firebase/firestore'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
 import styles from './page.module.css'
 
 function LiveBadge() {
+  const { t } = useLanguage()
   return (
     <span className="live-badge">
       <span className="live-dot" />
-      مباشر الآن
+      {t('common.liveNow')}
     </span>
   )
 }
 
 function MatchCard({ match, isLive }) {
+  const { t } = useLanguage()
   const homeName = match.home?.name_ar || 'الفريق الأول'
   const awayName = match.away?.name_ar || 'الفريق الثاني'
   const homeColor = match.home?.color || '#14b8a6'
@@ -30,10 +33,10 @@ function MatchCard({ match, isLive }) {
       <div className={styles.cardTop}>
         <div className={styles.cardMeta}>
           {isLive && <LiveBadge />}
-          {!isLive && <span className={styles.statusBadge}>{match.status === 'finished' ? 'انتهت' : 'قادمة'}</span>}
+          {!isLive && <span className={styles.statusBadge}>{match.status === 'finished' ? t('match.status.finished') : t('match.status.upcoming')}</span>}
           <span className={styles.tournament}>{match.tournament || 'بطولة XURA'}</span>
         </div>
-        {isLive && <span className={styles.setInfo}>ش {match.currentSetNum || 1}</span>}
+        {isLive && <span className={styles.setInfo}>{t('match.set')} {match.currentSetNum || 1}</span>}
       </div>
 
       <div className={styles.teamsRow}>
@@ -60,7 +63,7 @@ function MatchCard({ match, isLive }) {
 
       <div className={styles.cardFooter}>
         <span className={styles.watchBtn}>
-          {isLive ? '▶ شاهد الآن' : match.status === 'finished' ? '⟳ إعادة المشاهدة' : '🔔 تذكير'}
+          {isLive ? t('match.btn.watch') : match.status === 'finished' ? t('match.btn.replay') : t('match.btn.remind')}
         </span>
         {isLive && <span className={styles.liveIndicator}>🔴 Live</span>}
       </div>
@@ -84,6 +87,7 @@ function SkeletonCard() {
 
 export default function HomePage() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [liveMatches, setLiveMatches] = useState([])
   const [finishedMatches, setFinishedMatches] = useState([])
   const [loading, setLoading] = useState(true)
@@ -121,35 +125,35 @@ export default function HomePage() {
         <div className={`container ${styles.heroContent}`}>
           <div className={styles.heroTag}>
             <span className="live-dot" style={{ display:'inline-block' }} />
-            منصة البث الرياضي رقم 1 في مصر
+            {t('hero.tag')}
           </div>
           <h1 className={styles.heroTitle}>
-            شاهد الكرة الطائرة<br />
-            <span className={styles.heroGrad}>مباشرةً وبدقة عالية</span>
+            {t('hero.title1')}<br />
+            <span className={styles.heroGrad}>{t('hero.title2')}</span>
           </h1>
           <p className={styles.heroSub}>
-            بث مباشر مع نتائج حية فورية — متزامن مع الحكام في الملعب
+            {t('hero.sub')}
           </p>
           <div className={styles.heroActions}>
             <Link href="/schedule" className="btn btn-primary btn-lg">
-              📅 الجدول الكامل
+              {t('hero.btn.schedule')}
             </Link>
             {user ? (
               <button onClick={() => document.getElementById('live-now')?.scrollIntoView({ behavior: 'smooth' })} className="btn btn-ghost btn-lg">
-                📺 شاهد المباريات
+                {t('hero.btn.watchLive')}
               </button>
             ) : (
               <Link href="/login" className="btn btn-ghost btn-lg">
-                🎬 ابدأ المشاهدة
+                {t('hero.btn.watch')}
               </Link>
             )}
           </div>
           <div className={styles.heroStats}>
-            <div className={styles.stat}><b>{liveMatches.length}</b><span>مباشر الآن</span></div>
+            <div className={styles.stat}><b>{liveMatches.length}</b><span>{t('hero.stat.live')}</span></div>
             <div className={styles.statDiv} />
-            <div className={styles.stat}><b>{finishedMatches.length}+</b><span>مباراة مسجلة</span></div>
+            <div className={styles.stat}><b>{finishedMatches.length}+</b><span>{t('hero.stat.recorded')}</span></div>
             <div className={styles.statDiv} />
-            <div className={styles.stat}><b>HD</b><span>جودة عالية</span></div>
+            <div className={styles.stat}><b>HD</b><span>{t('hero.stat.hd')}</span></div>
           </div>
         </div>
       </section>
@@ -160,9 +164,9 @@ export default function HomePage() {
           <div className="sec-hd">
             <h2 className="flex gap-8" style={{ alignItems:'center' }}>
               <span className="live-dot" style={{ display:'inline-block' }} />
-              مباشر الآن
+              {t('common.liveNow')}
             </h2>
-            <Link href="/schedule" style={{ fontSize: 13, color: 'var(--teal)' }}>كل المباريات →</Link>
+            <Link href="/schedule" style={{ fontSize: 13, color: 'var(--teal)' }}>{t('common.viewAll')}</Link>
           </div>
 
           {loading ? (
@@ -172,10 +176,10 @@ export default function HomePage() {
           ) : liveMatches.length === 0 ? (
             <div className={styles.empty}>
               <div className={styles.emptyIcon}>📡</div>
-              <div className={styles.emptyText}>لا توجد مباريات مباشرة الآن</div>
-              <div className={styles.emptySub}>شاهد الجدول لمعرفة المباريات القادمة</div>
+              <div className={styles.emptyText}>{t('common.noMatches')}</div>
+              <div className={styles.emptySub}>{t('common.checkSchedule')}</div>
               <Link href="/schedule" className="btn btn-primary" style={{ marginTop: 16 }}>
-                📅 جدول المباريات
+                {t('hero.btn.schedule')}
               </Link>
             </div>
           ) : (
@@ -191,7 +195,7 @@ export default function HomePage() {
         <section className={styles.sec}>
           <div className="container">
             <div className="sec-hd">
-              <h2>🏆 آخر النتائج</h2>
+              <h2>🏆 {t('common.recentResults')}</h2>
             </div>
             <div className={styles.grid}>
               {finishedMatches.map(m => <MatchCard key={m.id} match={m} isLive={false} />)}

@@ -63,6 +63,29 @@ export default function DashboardUsersPage() {
     }
   }
 
+  const updateSubscription = async (uid, currentSub) => {
+    const isPremium = currentSub?.plan === 'premium'
+    const newPlan = isPremium ? 'free' : 'premium'
+    
+    let newExpiresAt = null
+    if (newPlan === 'premium') {
+      const d = new Date()
+      d.setMonth(d.getMonth() + 1) // default 1 month
+      newExpiresAt = d
+    }
+
+    try {
+      await updateDoc(doc(db, 'users', uid), {
+        subscription: {
+          plan: newPlan,
+          expiresAt: newExpiresAt
+        }
+      })
+    } catch (e) {
+      alert('خطأ في تحديث الباقة: ' + e.message)
+    }
+  }
+
   const filtered = users.filter(u => 
     u.displayName?.toLowerCase().includes(search.toLowerCase()) || 
     u.email?.toLowerCase().includes(search.toLowerCase())
@@ -108,6 +131,7 @@ export default function DashboardUsersPage() {
             <thead>
               <tr>
                 <th>المستخدم</th>
+                <th>الباقة (Subscription)</th>
                 <th>آخر ظهور</th>
                 <th style={{ textAlign: 'center' }}>صلاحية أدمن</th>
                 <th style={{ textAlign: 'center' }}>صلاحية حكم</th>
@@ -129,6 +153,20 @@ export default function DashboardUsersPage() {
                         <div className={styles.email}>{u.email}</div>
                       </div>
                     </div>
+                  </td>
+                  <td>
+                    <button 
+                      onClick={() => updateSubscription(u.id, u.subscription)}
+                      className={`btn btn-sm ${u.subscription?.plan === 'premium' ? 'btn-primary' : 'btn-ghost'}`}
+                      style={{ fontSize: 12, padding: '4px 8px' }}
+                    >
+                      {u.subscription?.plan === 'premium' ? '👑 Premium' : 'مجاني'}
+                    </button>
+                    {u.subscription?.plan === 'premium' && u.subscription?.expiresAt && (
+                      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 4 }}>
+                        ينتهي: {u.subscription.expiresAt.toDate ? u.subscription.expiresAt.toDate().toLocaleDateString('ar-EG') : new Date(u.subscription.expiresAt).toLocaleDateString('ar-EG')}
+                      </div>
+                    )}
                   </td>
                   <td className={styles.date}>
                     {u.lastLogin?.toDate ? u.lastLogin.toDate().toLocaleDateString('ar-EG') : '—'}

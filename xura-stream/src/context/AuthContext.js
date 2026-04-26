@@ -15,6 +15,7 @@ const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
+  const [profile, setProfile] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [isReferee, setIsReferee] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -41,12 +42,21 @@ export function AuthProvider({ children }) {
 
           const refSnap = await getDoc(doc(db, 'referees', u.uid))
           setIsReferee(refSnap.exists())
+          
+          // Get full user profile including subscription
+          const profileSnap = await getDoc(userRef)
+          if (profileSnap.exists()) {
+            setProfile(profileSnap.data())
+          }
         } catch {
           setIsAdmin(false)
           setIsReferee(false)
+          setProfile(null)
         }
       } else {
         setIsAdmin(false)
+        setIsReferee(false)
+        setProfile(null)
       }
       setLoading(false)
     })
@@ -67,7 +77,7 @@ export function AuthProvider({ children }) {
   const logout = () => signOut(auth)
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, isReferee, loading, loginWithGoogle, loginWithEmail, registerWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, profile, isAdmin, isReferee, loading, loginWithGoogle, loginWithEmail, registerWithEmail, logout }}>
       {children}
     </AuthContext.Provider>
   )

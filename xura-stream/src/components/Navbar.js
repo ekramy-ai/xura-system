@@ -3,10 +3,12 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
   const { user, isAdmin, logout } = useAuth()
+  const { lang, toggleLanguage, t } = useLanguage()
   const pathname = usePathname()
   const [scrolled,  setScrolled]  = useState(false)
   const [menuOpen,  setMenuOpen]  = useState(false)
@@ -32,10 +34,10 @@ export default function Navbar() {
   useEffect(() => { setMenuOpen(false); setUserDrop(false) }, [pathname])
 
   const links = [
-    { href: '/',          label: 'البث المباشر', icon: '📡' },
-    { href: '/schedule',  label: 'الجدول',       icon: '📅' },
-    { href: '/clubs',     label: 'الأندية',       icon: '🏟️' },
-    { href: '/standings', label: 'الترتيب',      icon: '🏆' },
+    { href: '/',          label: t('nav.home'),      icon: '📡' },
+    { href: '/schedule',  label: t('nav.schedule'),  icon: '📅' },
+    { href: '/clubs',     label: t('nav.clubs'),     icon: '🏟️' },
+    { href: '/standings', label: t('nav.standings'), icon: '🏆' },
   ]
 
   return (
@@ -64,6 +66,10 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className={styles.right}>
+            <button className={styles.langToggle} onClick={toggleLanguage} title="Change Language">
+              {lang === 'ar' ? 'EN' : 'عربي'}
+            </button>
+            
             {user ? (
               <div className={styles.userMenu} ref={dropRef}>
                 <button
@@ -82,20 +88,20 @@ export default function Navbar() {
                     <div className={styles.dropName}>{user.displayName || user.email}</div>
                     {isAdmin && (
                       <Link href="/dashboard" className={`${styles.dropItem} ${styles.dropAdmin}`}>
-                        ⚙️ لوحة الإدارة
+                        ⚙️ {t('nav.dashboard')}
                       </Link>
                     )}
                     <Link href="/profile" className={styles.dropItem}>👤 حسابي</Link>
                     <div className={styles.dropDivider} />
                     <button className={`${styles.dropItem} ${styles.dropLogout}`} onClick={logout}>
-                      🚪 تسجيل خروج
+                      🚪 {t('nav.logout') || 'تسجيل خروج'}
                     </button>
                   </div>
                 )}
               </div>
             ) : (
               <Link href="/login" className="btn btn-primary btn-sm">
-                تسجيل دخول
+                {t('nav.login')}
               </Link>
             )}
 
@@ -148,20 +154,20 @@ export default function Navbar() {
                 </div>
                 {isAdmin && (
                   <Link href="/dashboard" className={`${styles.drawerLink} ${styles.drawerAdmin}`}>
-                    <span className={styles.drawerIcon}>⚙️</span> لوحة الإدارة
+                    <span className={styles.drawerIcon}>⚙️</span> {t('nav.dashboard')}
                   </Link>
                 )}
                 <Link href="/profile" className={styles.drawerLink}>
-                  <span className={styles.drawerIcon}>👤</span> حسابي
+                  <span className={styles.drawerIcon}>👤</span> {t('nav.profile')}
                 </Link>
                 <button className={`${styles.drawerLink} ${styles.drawerLogout}`} onClick={logout}>
-                  <span className={styles.drawerIcon}>🚪</span> تسجيل خروج
+                  <span className={styles.drawerIcon}>🚪</span> {t('nav.logout') || 'تسجيل خروج'}
                 </button>
               </div>
             ) : (
               <div style={{ padding: '16px 20px' }}>
                 <Link href="/login" className="btn btn-primary" style={{ width: '100%' }}>
-                  تسجيل دخول
+                  {t('nav.login')}
                 </Link>
               </div>
             )}

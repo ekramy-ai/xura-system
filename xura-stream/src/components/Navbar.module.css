@@ -77,6 +77,24 @@
   margin-right: auto;
 }
 
+/* Lang toggle */
+.langToggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.langToggle:hover {
+  background: var(--surface2);
+  color: var(--text);
+  border-color: var(--teal);
+}
+
 /* User avatar */
 .userMenu { position: relative }
 .avatar {

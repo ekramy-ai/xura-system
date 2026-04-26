@@ -1,5 +1,6 @@
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
+import { LanguageProvider } from '@/context/LanguageContext'
 import Navbar from '@/components/Navbar'
 
 export const metadata = {
@@ -16,12 +17,14 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <AuthProvider>
-          <Navbar />
-          <main style={{ paddingTop: 'var(--nav-h)' }}>
-            {children}
-          </main>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Navbar />
+            <main style={{ paddingTop: 'var(--nav-h)' }}>
+              {children}
+            </main>
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   )
