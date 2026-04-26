@@ -12,6 +12,12 @@ export function LanguageProvider({ children }) {
     const saved = localStorage.getItem('xura_lang')
     if (saved && (saved === 'ar' || saved === 'en')) {
       setLang(saved)
+      document.documentElement.lang = saved
+      document.documentElement.dir = saved === 'ar' ? 'rtl' : 'ltr'
+    } else {
+      // Apply defaults even if no saved lang
+      document.documentElement.lang = 'ar'
+      document.documentElement.dir = 'rtl'
     }
   }, [])
 

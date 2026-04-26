@@ -8,6 +8,7 @@ export const translations = {
     'nav.dashboard': 'لوحة التحكم',
     'nav.login': 'تسجيل الدخول',
     'nav.profile': 'الملف الشخصي',
+    'nav.logout': 'تسجيل الخروج',
 
     // Home Page Hero
     'hero.tag': 'منصة البث الرياضي رقم 1 في مصر',
@@ -78,6 +79,7 @@ export const translations = {
     'nav.dashboard': 'Dashboard',
     'nav.login': 'Login',
     'nav.profile': 'Profile',
+    'nav.logout': 'Logout',
 
     // Home Page Hero
     'hero.tag': 'The #1 Sports Streaming Platform in Egypt',

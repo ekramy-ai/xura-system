@@ -45,10 +45,15 @@
 }
 .infoRow:last-child { border-bottom: none; }
 .badge {
-  background: var(--teal-bg);
-  color: var(--teal);
+  background: var(--surface2);
+  color: var(--text2);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 700;
+}
+.premium {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border: 1px solid rgba(245,158,11,0.2);
 }

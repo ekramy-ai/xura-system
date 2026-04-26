@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
-import { collection, onSnapshot, query, doc, setDoc, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore'
+import { collection, onSnapshot, query, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore'
 import { useAuth } from '@/context/AuthContext'
 import styles from './page.module.css'
 
