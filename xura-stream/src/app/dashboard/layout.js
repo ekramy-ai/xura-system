@@ -8,6 +8,7 @@ import styles from './layout.module.css'
 const NAV = [
   { href: '/dashboard',          icon: '📊', label: 'نظرة عامة' },
   { href: '/dashboard/clubs',    icon: '🏟️', label: 'الأندية' },
+  { href: '/dashboard/tournaments', icon: '🏆', label: 'البطولات والفرق', adminOnly: true },
   { href: '/dashboard/matches',  icon: '⚡', label: 'المباريات' },
   { href: '/dashboard/users',    icon: '👥', label: 'المستخدمون', adminOnly: true },
 ]
