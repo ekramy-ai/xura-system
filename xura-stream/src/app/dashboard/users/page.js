@@ -1,9 +1,55 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
-import { collection, onSnapshot, query, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore'
+import { collection, onSnapshot, query, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, orderBy, where } from 'firebase/firestore'
 import { useAuth } from '@/context/AuthContext'
 import styles from './page.module.css'
+
+function RefereeMatchesModal({ userId, userName, onClose }) {
+  const [matches, setMatches] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const q = query(collection(db, 'matches'), where('assignedReferee', '==', userId))
+    const unsub = onSnapshot(q, snap => {
+      setMatches(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoading(false)
+    })
+    return unsub
+  }, [userId])
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ fontSize: 18 }}>مباريات الحكم: {userName}</h2>
+          <button className="btn-close" onClick={onClose}>✕</button>
+        </div>
+
+        {loading ? (
+          <div style={{ padding: 40, textAlign: 'center' }}>جاري التحميل...</div>
+        ) : matches.length === 0 ? (
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text3)' }}>لا توجد مباريات مسندة لهذا الحكم حالياً.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 400, overflowY: 'auto', padding: 4 }}>
+            {matches.map(m => (
+              <div key={m.id} style={{ background: 'var(--surface2)', padding: 12, borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 'bold' }}>{m.home?.name_ar} VS {m.away?.name_ar}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>{m.tournament}</div>
+                </div>
+                <div style={{ fontSize: 11, padding: '4px 8px', borderRadius: 8, background: m.status === 'live' ? 'var(--red-bg)' : 'var(--bg2)', color: m.status === 'live' ? 'var(--red)' : 'var(--text2)' }}>
+                  {m.status === 'live' ? '🔴 مباشر' : (m.status === 'finished' ? '✓ منتهية' : '⏳ قادمة')}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <button className="btn btn-primary" style={{ width: '100%', marginTop: 20 }} onClick={onClose}>إغلاق</button>
+      </div>
+    </div>
+  )
+}
 
 export default function DashboardUsersPage() {
   const { user: me } = useAuth()
@@ -12,6 +58,7 @@ export default function DashboardUsersPage() {
   const [referees, setReferees] = useState({})
   const [loading,  setLoading]  = useState(true)
   const [search,   setSearch]   = useState('')
+  const [viewMatchesUser, setViewMatchesUser] = useState(null)
 
   useEffect(() => {
     // 1. Listen to all users
@@ -30,7 +77,7 @@ export default function DashboardUsersPage() {
 
     const unsubRefs = onSnapshot(collection(db, 'referees'), snap => {
       const map = {}
-      snap.docs.forEach(d => map[d.id] = true)
+      snap.docs.forEach(d => map[d.id] = d.data())
       setReferees(map)
     })
 
@@ -55,7 +102,8 @@ export default function DashboardUsersPage() {
           displayName: u?.displayName || 'مستخدم',
           email: u?.email || '',
           addedAt: serverTimestamp(),
-          addedBy: me?.uid
+          addedBy: me?.uid,
+          pin: '0000' // Default PIN
         })
       }
     } catch (e) {
@@ -134,7 +182,7 @@ export default function DashboardUsersPage() {
                 <th>الباقة (Subscription)</th>
                 <th>آخر ظهور</th>
                 <th style={{ textAlign: 'center' }}>صلاحية أدمن</th>
-                <th style={{ textAlign: 'center' }}>صلاحية حكم</th>
+                <th style={{ textAlign: 'center' }}>صلاحية حكم / رمز (PIN)</th>
               </tr>
             </thead>
             <tbody>
@@ -182,19 +230,43 @@ export default function DashboardUsersPage() {
                     </label>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <label className={styles.switch}>
-                      <input 
-                        type="checkbox" 
-                        checked={!!referees[u.id]} 
-                        onChange={() => toggleRole(u.id, 'referee', referees[u.id])}
-                      />
-                      <span className={`${styles.slider} ${styles.refSlider}`}></span>
-                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <label className={styles.switch}>
+                        <input 
+                          type="checkbox" 
+                          checked={!!referees[u.id]} 
+                          onChange={() => toggleRole(u.id, 'referee', referees[u.id])}
+                        />
+                        <span className={`${styles.slider} ${styles.refSlider}`}></span>
+                      </label>
+                      {!!referees[u.id] && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                          <div style={{ fontSize: 10, color: 'var(--teal)', fontWeight: 'bold' }}>
+                            PIN: {referees[u.id]?.pin || 'لم يحدد بعد'}
+                          </div>
+                          <button 
+                            className="btn btn-ghost btn-sm" 
+                            style={{ fontSize: 9, padding: '2px 8px', color: 'var(--teal)', borderColor: 'rgba(20,184,166,0.2)' }}
+                            onClick={() => setViewMatchesUser(u)}
+                          >
+                            👁 عرض مبارياته
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        )}
+
+        {viewMatchesUser && (
+          <RefereeMatchesModal 
+            userId={viewMatchesUser.id} 
+            userName={viewMatchesUser.displayName || viewMatchesUser.email} 
+            onClose={() => setViewMatchesUser(null)} 
+          />
         )}
       </div>
     </div>

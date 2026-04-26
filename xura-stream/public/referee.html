@@ -214,6 +214,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDY3k5KR2NDncsFtee7u6pXMMi1WvwYq7c",
@@ -232,9 +233,38 @@
     window.docFirebaseDB = doc;
     window.collectionFirebaseDB = collection;
     window.firebaseConfigured = true;
-    if (typeof window.initFirestoreSync === 'function') {
-      window.initFirestoreSync();
-    }
+
+    const auth = getAuth(window.firebaseApp);
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Fetch referee doc to see if PIN is set
+        const refDoc = await getDoc(doc(window.db, 'referees', user.uid));
+        if (refDoc.exists()) {
+          const data = refDoc.data();
+          window.loggedInUserRef = { id: user.uid, ...data };
+          // If PIN is '0000', they must change it
+          if (data.pin === '0000') {
+            showPinSetup();
+          } else {
+            sessionStorage.setItem('xura_referee', JSON.stringify(window.loggedInUserRef));
+            if (typeof window.initFirestoreSync === 'function') window.initFirestoreSync();
+          }
+        }
+      } else {
+        // No session, check if already in sessionStorage (legacy)
+        if (!sessionStorage.getItem('xura_referee')) {
+          window.location.href = 'referee-login.html';
+        }
+      }
+    });
+
+    window.updateRefereePin = async (newPin) => {
+      if (!window.loggedInUserRef) return;
+      await updateDoc(doc(window.db, 'referees', window.loggedInUserRef.id), { pin: newPin });
+      window.loggedInUserRef.pin = newPin;
+      sessionStorage.setItem('xura_referee', JSON.stringify(window.loggedInUserRef));
+      location.reload();
+    };
   </script>
 </head>
 <body>
@@ -406,6 +436,36 @@
       <span>Results</span>
     </button>
     <button id="mo-new" onclick="resetMatch()"></button>
+  </div>
+
+  <!-- PIN Setup Overlay -->
+  <div id="pin-setup" style="display:none;position:absolute;inset:0;background:var(--bg);z-index:100;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center">
+    <div style="font-size:40px;margin-bottom:10px">🔐</div>
+    <h2 style="font-size:20px;margin-bottom:8px">إعداد رمز الدخول الخاص بك</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:24px">يرجى تعيين رمز PIN مكون من 4 أرقام لاستخدامه لاحقاً</p>
+    
+    <div id="pin-setup-dots" style="display:flex;gap:12px;margin-bottom:24px">
+      <div class="dot" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--surface2)"></div>
+      <div class="dot" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--surface2)"></div>
+      <div class="dot" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--surface2)"></div>
+      <div class="dot" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--surface2)"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:240px">
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('1')">1</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('2')">2</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('3')">3</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('4')">4</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('5')">5</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('6')">6</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('7')">7</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('8')">8</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('9')">9</button>
+      <button class="sec-btn" style="height:50px" onclick="setupPinClear()">⌫</button>
+      <button class="sec-btn" style="height:50px;font-size:20px" onclick="setupPinPress('0')">0</button>
+      <button class="sec-btn" style="height:50px;color:var(--teal)" onclick="setupPinSubmit()">✓</button>
+    </div>
+    <div id="pin-setup-status" style="margin-top:20px;font-size:13px;color:var(--red)"></div>
   </div>
 </div>
 
@@ -1283,8 +1343,13 @@ window.initFirestoreSync = async function() {
 
       // 2. Check Permission
       if (matchData.assignedReferee !== loggedInRef.id) {
-        alert(LANG === 'ar' ? 'عذراً، لست الحكم المعين لهذه المباراة' : 'Access Denied: You are not the assigned referee for this match');
-        window.location.href = 'xura-referee-login.html';
+        document.body.innerHTML = `
+          <div style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px">
+            <h1 style="color:var(--red);margin-bottom:16px">Access Denied</h1>
+            <p>${LANG === 'ar' ? 'عذراً، لست الحكم المعين لهذه المباراة' : 'You are not the assigned referee for this match'}</p>
+            <button onclick="window.location.href='/profile'" class="sec-btn" style="margin-top:20px">العودة للملف الشخصي</button>
+          </div>
+        `;
         return;
       }
 
@@ -1327,9 +1392,39 @@ const initInterval = setInterval(() => {
 
 // Also try immediately just in case
 if (window.firebaseConfigured) {
-  clearInterval(initInterval);
-  window.initFirestoreSync();
+  // We wait for the Auth observer in the script tag to call this
 }
+
+let setupPinValue = '';
+function showPinSetup() {
+  document.getElementById('pin-setup').style.display = 'flex';
+}
+window.setupPinPress = function(n) {
+  if (setupPinValue.length < 4) {
+    setupPinValue += n;
+    updateSetupDots();
+  }
+};
+window.setupPinClear = function() {
+  setupPinValue = setupPinValue.slice(0, -1);
+  updateSetupDots();
+};
+function updateSetupDots() {
+  const dots = document.querySelectorAll('#pin-setup-dots .dot');
+  dots.forEach((d, i) => {
+    d.style.background = i < setupPinValue.length ? 'var(--teal)' : 'transparent';
+    d.style.borderColor = i < setupPinValue.length ? 'var(--teal)' : 'var(--surface2)';
+  });
+}
+window.setupPinSubmit = async function() {
+  if (setupPinValue.length !== 4) {
+    document.getElementById('pin-setup-status').textContent = 'يجب إدخال 4 أرقام';
+    return;
+  }
+  document.getElementById('pin-setup-status').style.color = 'var(--teal)';
+  document.getElementById('pin-setup-status').textContent = 'جاري الحفظ...';
+  await window.updateRefereePin(setupPinValue);
+};
 </script>
 </body>
 </html>
