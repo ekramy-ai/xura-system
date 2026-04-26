@@ -100,9 +100,29 @@ export default function AdminSetupPage() {
               يوجد مسؤولون مسجلون في النظام بالفعل.<br/>
               هذه الصفحة تعمل فقط عند الإعداد الأول.
             </p>
-            <Link href="/login" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
-              تسجيل الدخول →
-            </Link>
+
+            {user ? (
+              <div style={{ background: 'var(--surface2)', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid var(--border)' }}>
+                <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '4px' }}>أنت مسجل دخول بـ:</p>
+                <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{user.email}</div>
+                <p style={{ fontSize: '11px', color: 'var(--red)', marginTop: '8px' }}>⚠️ هذا الحساب ليس لديه صلاحيات مسؤول.</p>
+              </div>
+            ) : (
+              <button className={styles.googleBtn} onClick={handleGoogle} disabled={signingIn} style={{ marginBottom: 12 }}>
+                {signingIn ? 'جاري التحقق...' : 'سجل دخول بـ Google للتحقق'}
+              </button>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Link href="/login" className="btn btn-primary" style={{ width: '100%' }}>
+                صفحة تسجيل الدخول الرئيسية ←
+              </Link>
+              {user && (
+                <button onClick={logout} className="btn btn-ghost" style={{ width: '100%', fontSize: 13 }}>
+                  تسجيل خروج (للدخول بحساب آخر)
+                </button>
+              )}
+            </div>
           </>
         )}
 

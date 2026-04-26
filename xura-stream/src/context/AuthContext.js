@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async u => {
       setUser(u)
       if (u) {
+        console.log("Current User UID:", u.uid); // Debug helper
         // Check if the user has an admin record in Firestore
         try {
           const snap = await getDoc(doc(db, 'admins', u.uid))

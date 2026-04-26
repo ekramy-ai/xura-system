@@ -15,6 +15,7 @@ const EMPTY_MATCH = {
   home: { name_ar: '', color: '#14b8a6', clubId: '' },
   away: { name_ar: '', color: '#3b82f6', clubId: '' },
   currentSetNum: 1,
+  stream_youtube_id: '',
 }
 
 export default function DashboardMatchesPage() {
@@ -46,6 +47,7 @@ export default function DashboardMatchesPage() {
       home: { name_ar: m.home?.name_ar || '', color: m.home?.color || '#14b8a6', clubId: m.home?.clubId || '' },
       away: { name_ar: m.away?.name_ar || '', color: m.away?.color || '#3b82f6', clubId: m.away?.clubId || '' },
       currentSetNum: m.currentSetNum || 1,
+      stream_youtube_id: m.stream_youtube_id || '',
     })
     setEditId(m.id); setModal('edit')
   }
@@ -169,6 +171,20 @@ export default function DashboardMatchesPage() {
                   <option value="live">مباشر</option>
                   <option value="finished">منتهية</option>
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label>YouTube Stream ID (معرف البث)</label>
+                <input
+                  className="form-control"
+                  value={form.stream_youtube_id}
+                  onChange={e => setForm(f => ({ ...f, stream_youtube_id: e.target.value }))}
+                  placeholder="مثال: dQw4w9WgXcQ"
+                  dir="ltr"
+                />
+                <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>
+                  انسخ الكود الموجود بعد `v=` في رابط اليوتيوب
+                </p>
               </div>
 
               {/* Home team */}

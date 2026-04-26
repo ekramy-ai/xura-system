@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Link from 'next/link'
@@ -7,7 +7,7 @@ import styles from './page.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { loginWithGoogle, loginWithEmail, registerWithEmail } = useAuth()
+  const { user, isAdmin, loading, loginWithGoogle, loginWithEmail, registerWithEmail } = useAuth()
 
   const [mode, setMode] = useState('login') // 'login' | 'register'
   const [email, setEmail] = useState('')
@@ -25,6 +25,17 @@ export default function LoginPage() {
     'auth/popup-closed-by-user': '',
   }
 
+  // Auto-redirect when logged in
+  useEffect(() => {
+    if (!loading && user) {
+      if (isAdmin) {
+        router.push('/dashboard')
+      } else {
+        router.push('/')
+      }
+    }
+  }, [user, isAdmin, loading, router])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(''); setLoading(true)
@@ -34,10 +45,9 @@ export default function LoginPage() {
       } else {
         await registerWithEmail(email, pass, name)
       }
-      router.push('/')
+      // Redirect handled by useEffect
     } catch (err) {
       setError(errorMap[err.code] || 'حدث خطأ، حاول مرة أخرى')
-    } finally {
       setLoading(false)
     }
   }
@@ -46,11 +56,10 @@ export default function LoginPage() {
     setError(''); setLoading(true)
     try {
       await loginWithGoogle()
-      router.push('/')
+      // Redirect handled by useEffect
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user')
         setError(errorMap[err.code] || 'حدث خطأ مع Google')
-    } finally {
       setLoading(false)
     }
   }
