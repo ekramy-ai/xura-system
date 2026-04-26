@@ -44,12 +44,13 @@ function ScoreOverlay({ match }) {
 /* ── Video Player ── */
 function VideoPlayer({ match, profile }) {
   const { t } = useLanguage()
+  const { isAdmin, isReferee } = useAuth()
   const streamId = match?.stream_youtube_id || match?.youtube_id
   const isLive   = match?.status === 'live'
 
   if (match?.isPremium) {
-    let isUnlocked = false
-    if (profile?.subscription) {
+    let isUnlocked = isAdmin || isReferee
+    if (profile?.subscription && !isUnlocked) {
       const sub = profile.subscription
       const isPremiumActive = sub.plan === 'premium' && (sub.expiresAt ? sub.expiresAt.toDate() > new Date() : true)
       const hasTourPass = match.tournamentId && sub.unlockedTournaments?.includes(match.tournamentId)
