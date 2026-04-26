@@ -7,7 +7,7 @@ import styles from './page.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { user, isAdmin, loading, loginWithGoogle, loginWithEmail, registerWithEmail } = useAuth()
+  const { user, isAdmin, isReferee, loading, loginWithGoogle, loginWithEmail, registerWithEmail } = useAuth()
 
   const [mode, setMode] = useState('login') // 'login' | 'register'
   const [email, setEmail] = useState('')
@@ -28,13 +28,13 @@ export default function LoginPage() {
   // Auto-redirect when logged in
   useEffect(() => {
     if (!loading && user) {
-      if (isAdmin) {
+      if (isAdmin || isReferee) {
         router.push('/dashboard')
       } else {
         router.push('/')
       }
     }
-  }, [user, isAdmin, loading, router])
+  }, [user, isAdmin, isReferee, loading, router])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

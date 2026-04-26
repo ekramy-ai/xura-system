@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { db } from '@/lib/firebase'
 import { collection, query, where, onSnapshot, orderBy, limit, getDocs } from 'firebase/firestore'
 import Link from 'next/link'
+import { useAuth } from '@/context/AuthContext'
 import styles from './page.module.css'
 
 function LiveBadge() {
@@ -82,6 +83,7 @@ function SkeletonCard() {
 }
 
 export default function HomePage() {
+  const { user } = useAuth()
   const [liveMatches, setLiveMatches] = useState([])
   const [finishedMatches, setFinishedMatches] = useState([])
   const [loading, setLoading] = useState(true)
@@ -132,9 +134,15 @@ export default function HomePage() {
             <Link href="/schedule" className="btn btn-primary btn-lg">
               📅 الجدول الكامل
             </Link>
-            <Link href="/login" className="btn btn-ghost btn-lg">
-              🎬 ابدأ المشاهدة
-            </Link>
+            {user ? (
+              <button onClick={() => document.getElementById('live-now')?.scrollIntoView({ behavior: 'smooth' })} className="btn btn-ghost btn-lg">
+                📺 شاهد المباريات
+              </button>
+            ) : (
+              <Link href="/login" className="btn btn-ghost btn-lg">
+                🎬 ابدأ المشاهدة
+              </Link>
+            )}
           </div>
           <div className={styles.heroStats}>
             <div className={styles.stat}><b>{liveMatches.length}</b><span>مباشر الآن</span></div>
@@ -147,7 +155,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Live Now ── */}
-      <section className={styles.sec}>
+      <section id="live-now" className={styles.sec}>
         <div className="container">
           <div className="sec-hd">
             <h2 className="flex gap-8" style={{ alignItems:'center' }}>

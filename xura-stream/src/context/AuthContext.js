@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
         
         // Sync user profile to Firestore
         const userRef = doc(db, 'users', u.uid)
-        setDoc(userRef, {
+        await setDoc(userRef, {
           displayName: u.displayName || 'مستخدم',
           email: u.email,
           photoURL: u.photoURL,
