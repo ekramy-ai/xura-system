@@ -66,6 +66,9 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className={styles.right}>
+            <Link href="/subscribe" style={{ textDecoration: 'none', background: 'linear-gradient(135deg, #f59e0b, #d97706)', padding: '6px 12px', borderRadius: '20px', color: '#fff', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              👑 {lang === 'ar' ? 'اشتراك' : 'Premium'}
+            </Link>
             <button className={styles.langToggle} onClick={toggleLanguage} title="Change Language">
               {lang === 'ar' ? 'EN' : 'عربي'}
             </button>

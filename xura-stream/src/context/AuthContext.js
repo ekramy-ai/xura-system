@@ -1,7 +1,7 @@
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { auth, db, googleProvider } from '@/lib/firebase'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import {
   onAuthStateChanged,
   signInWithPopup,
@@ -76,8 +76,43 @@ export function AuthProvider({ children }) {
 
   const logout = () => signOut(auth)
 
+  const purchaseSubscription = async (planType, tournamentId = null) => {
+    if (!user) throw new Error('Not logged in')
+    
+    // Mock network delay for payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000))
+
+    let currentSub = profile?.subscription || { plan: 'free', expiresAt: null, unlockedTournaments: [] }
+    let newTournaments = currentSub.unlockedTournaments || []
+
+    if (planType === 'monthly') {
+      currentSub.plan = 'premium'
+      const d = new Date()
+      d.setMonth(d.getMonth() + 1)
+      currentSub.expiresAt = d
+    } else if (planType === 'yearly') {
+      currentSub.plan = 'premium'
+      const d = new Date()
+      d.setFullYear(d.getFullYear() + 1)
+      currentSub.expiresAt = d
+    } else if (planType === 'tourPass' && tournamentId) {
+      if (!newTournaments.includes(tournamentId)) {
+        newTournaments.push(tournamentId)
+      }
+      currentSub.unlockedTournaments = newTournaments
+    }
+
+    // Update Firestore
+    const userRef = doc(db, 'users', user.uid)
+    await updateDoc(userRef, { subscription: currentSub })
+    
+    // Update local state immediately
+    setProfile(prev => ({ ...prev, subscription: currentSub }))
+    return true
+  }
+
   return (
-    <AuthContext.Provider value={{ user, profile, isAdmin, isReferee, loading, loginWithGoogle, loginWithEmail, registerWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, profile, isAdmin, isReferee, loading, loginWithGoogle, loginWithEmail, registerWithEmail, logout, purchaseSubscription }}>
       {children}
     </AuthContext.Provider>
   )

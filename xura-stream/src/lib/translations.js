@@ -37,8 +37,37 @@ export const translations = {
 
     // Paywall
     'paywall.title': 'محتوى حصري 🔒',
-    'paywall.desc': 'هذه المباراة مشفرة وتتطلب اشتراك Premium لمشاهدة البث الحي.',
-    'paywall.upgrade': 'تواصل مع الإدارة للاشتراك',
+    'paywall.desc': 'هذه المباراة مشفرة وتحتاج إلى اشتراك Premium لمشاهدة البث المباشر. يمكنك متابعة النتيجة الحية مجاناً.',
+    'paywall.upgrade': 'الترقية الآن 👑',
+
+    // Subscribe
+    'subscribe.title': 'باقات الاشتراك',
+    'subscribe.subtitle': 'اختر الباقة المناسبة لك واستمتع بمشاهدة كل المباريات الحصرية',
+    'subscribe.free': 'الباقة الأساسية',
+    'subscribe.freeDesc': 'متابعة النتائج الحية وجداول البطولات',
+    'subscribe.monthly': 'باقة XURA المميزة',
+    'subscribe.monthlyDesc': 'فتح جميع المباريات المشفرة وإزالة الإعلانات',
+    'subscribe.yearly': 'باقة XURA برو',
+    'subscribe.yearlyDesc': 'نفس مميزات المميزة باشتراك سنوي بخصم خاص',
+    'subscribe.tourPass': 'تذكرة بطولة:',
+    'subscribe.tourPassDesc': 'وصول مدى الحياة لمباريات هذه البطولة',
+    'subscribe.subscribeBtn': 'اشترك الآن',
+    'subscribe.currentPlan': 'باقتك الحالية',
+
+    // Checkout
+    'checkout.title': 'إتمام الدفع',
+    'checkout.subtitle': 'أنت على وشك الاشتراك في:',
+    'checkout.method': 'اختر طريقة الدفع',
+    'checkout.card': 'بطاقة ائتمانية',
+    'checkout.wallet': 'محفظة إلكترونية',
+    'checkout.paypal': 'باي بال',
+    'checkout.cardNum': 'رقم البطاقة',
+    'checkout.expiry': 'تاريخ الانتهاء',
+    'checkout.cvv': 'رمز CVV',
+    'checkout.phoneNum': 'رقم الموبايل (المحفظة)',
+    'checkout.payBtn': 'تأكيد الدفع',
+    'checkout.processing': 'جاري الدفع...',
+    'checkout.success': 'تم الدفع بنجاح! جاري تفعيل الاشتراك...'
   },
   en: {
     // Navbar
@@ -77,8 +106,37 @@ export const translations = {
     'match.set': 'S',
 
     // Paywall
-    'paywall.title': 'Premium Content 🔒',
-    'paywall.desc': 'This match is premium and requires an active subscription to watch the live stream.',
-    'paywall.upgrade': 'Contact admin to subscribe',
+    'paywall.title': 'Exclusive Content 🔒',
+    'paywall.desc': 'This match is encrypted and requires a Premium subscription to watch the live stream. You can follow the live score for free.',
+    'paywall.upgrade': 'Upgrade Now 👑',
+
+    // Subscribe
+    'subscribe.title': 'Subscription Plans',
+    'subscribe.subtitle': 'Choose the right plan for you and enjoy watching all exclusive matches',
+    'subscribe.free': 'Basic Plan',
+    'subscribe.freeDesc': 'Follow live scores and tournament schedules',
+    'subscribe.monthly': 'XURA Premium',
+    'subscribe.monthlyDesc': 'Unlock all encrypted matches and remove ads',
+    'subscribe.yearly': 'XURA Pro',
+    'subscribe.yearlyDesc': 'Same premium features with a yearly subscription at a special discount',
+    'subscribe.tourPass': 'Tournament Pass:',
+    'subscribe.tourPassDesc': 'Lifetime access to all matches in this tournament',
+    'subscribe.subscribeBtn': 'Subscribe Now',
+    'subscribe.currentPlan': 'Current Plan',
+
+    // Checkout
+    'checkout.title': 'Checkout',
+    'checkout.subtitle': 'You are about to subscribe to:',
+    'checkout.method': 'Select Payment Method',
+    'checkout.card': 'Credit Card',
+    'checkout.wallet': 'Mobile Wallet',
+    'checkout.paypal': 'PayPal',
+    'checkout.cardNum': 'Card Number',
+    'checkout.expiry': 'Expiry Date',
+    'checkout.cvv': 'CVV',
+    'checkout.phoneNum': 'Mobile Number (Wallet)',
+    'checkout.payBtn': 'Confirm Payment',
+    'checkout.processing': 'Processing...',
+    'checkout.success': 'Payment successful! Activating subscription...'
   }
 }

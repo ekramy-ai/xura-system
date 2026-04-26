@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext'
 export default function DashboardTournamentsPage() {
   const { isAdmin } = useAuth()
   const [tournaments, setTournaments] = useState([])
+  const [clubs, setClubs] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Modals state
@@ -51,8 +52,11 @@ export default function DashboardTournamentsPage() {
       rawTeams = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       buildData()
     })
+    const unsubClubs = onSnapshot(collection(db, 'clubs'), snap => {
+      setClubs(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    })
 
-    return () => { unsubT(); unsubC(); unsubTm(); }
+    return () => { unsubT(); unsubC(); unsubTm(); unsubClubs(); }
   }, [])
 
   const generateId = () => Math.random().toString(36).substr(2, 9)
@@ -116,6 +120,13 @@ export default function DashboardTournamentsPage() {
       await deleteDoc(doc(db, collectionName, id))
     } catch (e) {
       alert('خطأ أثناء الحذف: ' + e.message)
+    }
+  }
+
+  const pickClub = (clubId) => {
+    const c = clubs.find(x => x.id === clubId)
+    if (c) {
+      setTeamForm(f => ({ ...f, name_ar: c.name_ar, name_en: c.name_en || '', color: c.colors?.primary || '#14b8a6' }))
     }
   }
 
@@ -249,6 +260,15 @@ export default function DashboardTournamentsPage() {
               <h2>إضافة فريق جديد</h2>
               <button className="modal-close" onClick={() => setTeamModal(null)}>✕</button>
             </div>
+            {clubs.length > 0 && (
+              <div className="form-group">
+                <label>اختر من الأندية المضافة مسبقاً</label>
+                <select className="form-control" onChange={e => pickClub(e.target.value)}>
+                  <option value="">— اختر نادي للربط السريع —</option>
+                  {clubs.map(c => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
+                </select>
+              </div>
+            )}
             <div className="form-group">
               <label>اسم الفريق (بالعربية)</label>
               <input className="form-control" value={teamForm.name_ar} onChange={e => setTeamForm(f => ({ ...f, name_ar: e.target.value }))} placeholder="مثال: الزمالك" />

@@ -48,10 +48,15 @@ function VideoPlayer({ match, profile }) {
   const isLive   = match?.status === 'live'
 
   if (match?.isPremium) {
-    const isPremiumActive = profile?.subscription?.plan === 'premium' && 
-      (profile.subscription.expiresAt ? profile.subscription.expiresAt.toDate() > new Date() : true);
+    let isUnlocked = false
+    if (profile?.subscription) {
+      const sub = profile.subscription
+      const isPremiumActive = sub.plan === 'premium' && (sub.expiresAt ? sub.expiresAt.toDate() > new Date() : true)
+      const hasTourPass = match.tournamentId && sub.unlockedTournaments?.includes(match.tournamentId)
+      isUnlocked = isPremiumActive || hasTourPass
+    }
     
-    if (!isPremiumActive) {
+    if (!isUnlocked) {
       return (
         <div className={styles.noStream} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r2)' }}>
           <div className={styles.noStreamIcon}>🔒</div>
@@ -61,9 +66,9 @@ function VideoPlayer({ match, profile }) {
           <p className={styles.noStreamSub} style={{ maxWidth: 400, margin: '12px auto' }}>
             {t('paywall.desc')}
           </p>
-          <button className="btn btn-primary" style={{ marginTop: 16 }}>
+          <Link href="/subscribe" className="btn btn-primary" style={{ marginTop: 16 }}>
             {t('paywall.upgrade')}
-          </button>
+          </Link>
         </div>
       )
     }

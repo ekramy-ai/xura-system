@@ -12,7 +12,6 @@
 }
 @media (max-width: 900px) {
   .watchLayout { grid-template-columns: 1fr; }
-  .sidebar { order: -1; }
 }
 
 /* ── Player ── */
