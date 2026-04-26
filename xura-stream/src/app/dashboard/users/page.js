@@ -115,10 +115,10 @@ export default function DashboardUsersPage() {
             <b>{users.length}</b> مستخدم
           </div>
           <div className={styles.statItem}>
-            <b style={{ color: 'var(--amber)' }}>{Object.keys(admins).length}</b> أدمن
+            <b style={{ color: 'var(--amber)' }}>{users.filter(u => !!admins[u.id]).length}</b> أدمن
           </div>
           <div className={styles.statItem}>
-            <b style={{ color: 'var(--teal)' }}>{Object.keys(referees).length}</b> حكام
+            <b style={{ color: 'var(--teal)' }}>{users.filter(u => !!referees[u.id]).length}</b> حكام
           </div>
         </div>
       </div>
