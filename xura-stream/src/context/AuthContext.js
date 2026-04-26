@@ -1,7 +1,7 @@
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { auth, db, googleProvider } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import {
   onAuthStateChanged,
   signInWithPopup,
@@ -24,7 +24,17 @@ export function AuthProvider({ children }) {
       setUser(u)
       if (u) {
         console.log("Current User UID:", u.uid); // Debug helper
-        // Check if the user has an admin record in Firestore
+        
+        // Sync user profile to Firestore
+        const userRef = doc(db, 'users', u.uid)
+        setDoc(userRef, {
+          displayName: u.displayName || 'مستخدم',
+          email: u.email,
+          photoURL: u.photoURL,
+          lastLogin: serverTimestamp(),
+        }, { merge: true })
+
+        // Check roles
         try {
           const snap = await getDoc(doc(db, 'admins', u.uid))
           setIsAdmin(snap.exists())

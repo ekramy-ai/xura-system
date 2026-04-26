@@ -5,11 +5,12 @@ import { collection, onSnapshot, query } from 'firebase/firestore'
 import Link from 'next/link'
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState({ clubs: 0, matches: 0, live: 0, finished: 0 })
+  const [stats, setStats] = useState({ clubs: 0, matches: 0, live: 0, finished: 0, users: 0 })
 
   useEffect(() => {
     const u1 = onSnapshot(query(collection(db, 'clubs')), s => setStats(p => ({ ...p, clubs: s.size })))
-    const u2 = onSnapshot(query(collection(db, 'matches')), s => {
+    const u2 = onSnapshot(query(collection(db, 'users')), s => setStats(p => ({ ...p, users: s.size })))
+    const u3 = onSnapshot(query(collection(db, 'matches')), s => {
       const all = s.docs.map(d => d.data())
       setStats(p => ({
         ...p,
@@ -18,14 +19,14 @@ export default function DashboardPage() {
         finished: all.filter(m => m.status === 'finished').length,
       }))
     })
-    return () => { u1(); u2() }
+    return () => { u1(); u2(); u3() }
   }, [])
 
   const statCards = [
     { label: 'إجمالي الأندية',    value: stats.clubs,    icon: '🏟️', color: 'var(--teal)',   bg: 'var(--teal-bg)'   },
     { label: 'إجمالي المباريات',  value: stats.matches,  icon: '⚡',  color: 'var(--blue)',   bg: 'var(--blue-bg)'   },
+    { label: 'مستخدمون',         value: stats.users,    icon: '👥',  color: 'var(--amber)',  bg: 'var(--amber-bg)'  },
     { label: 'مباشر الآن',        value: stats.live,     icon: '🔴',  color: 'var(--red)',    bg: 'var(--red-bg)'    },
-    { label: 'مباريات منتهية',    value: stats.finished, icon: '✅',  color: 'var(--green)',  bg: 'var(--green-bg)'  },
   ]
 
   const quickLinks = [
