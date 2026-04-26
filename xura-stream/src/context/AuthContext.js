@@ -16,6 +16,7 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isReferee, setIsReferee] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -27,8 +28,12 @@ export function AuthProvider({ children }) {
         try {
           const snap = await getDoc(doc(db, 'admins', u.uid))
           setIsAdmin(snap.exists())
+
+          const refSnap = await getDoc(doc(db, 'referees', u.uid))
+          setIsReferee(refSnap.exists())
         } catch {
           setIsAdmin(false)
+          setIsReferee(false)
         }
       } else {
         setIsAdmin(false)
@@ -52,7 +57,7 @@ export function AuthProvider({ children }) {
   const logout = () => signOut(auth)
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading, loginWithGoogle, loginWithEmail, registerWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, isAdmin, isReferee, loading, loginWithGoogle, loginWithEmail, registerWithEmail, logout }}>
       {children}
     </AuthContext.Provider>
   )

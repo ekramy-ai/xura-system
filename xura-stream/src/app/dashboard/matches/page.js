@@ -140,6 +140,7 @@ export default function DashboardMatchesPage() {
                   <td><span className={`badge ${STATUS_BADGE[m.status] || 'badge-teal'}`}>{STATUS_LABELS[m.status] || m.status}</span></td>
                   <td>
                     <div style={{ display: 'flex', gap: 8 }}>
+                      <Link href={`/dashboard/matches/${m.id}/control`} className="btn btn-primary btn-sm">تحكم 🎮</Link>
                       <button className="btn btn-ghost btn-sm" onClick={() => openEdit(m)}>تعديل</button>
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(m.id)}>حذف</button>
                     </div>

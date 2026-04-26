@@ -9,7 +9,11 @@ const NAV = [
   { href: '/dashboard',          icon: '📊', label: 'نظرة عامة' },
   { href: '/dashboard/clubs',    icon: '🏟️', label: 'الأندية' },
   { href: '/dashboard/matches',  icon: '⚡', label: 'المباريات' },
-  { href: '/dashboard/users',    icon: '👥', label: 'المستخدمون' },
+  { href: '/dashboard/users',    icon: '👥', label: 'المستخدمون', adminOnly: true },
+]
+
+const REF_NAV = [
+  { href: '/dashboard/matches',  icon: '⚡', label: 'إدارة المباريات' },
 ]
 
 export default function DashboardLayout({ children }) {
@@ -19,12 +23,11 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/admin-setup')
-    } else if (!loading && user && !isAdmin) {
-      // User is logged in but not admin — show them the setup page
+      router.push('/login')
+    } else if (!loading && user && !isAdmin && !isReferee) {
       router.push('/admin-setup')
     }
-  }, [user, isAdmin, loading, router])
+  }, [user, isAdmin, isReferee, loading, router])
 
   if (loading) {
     return (
@@ -35,7 +38,9 @@ export default function DashboardLayout({ children }) {
     )
   }
 
-  if (!isAdmin) return null
+  if (!isAdmin && !isReferee) return null
+
+  const sidebarLinks = isAdmin ? NAV : REF_NAV
 
   return (
     <div className={styles.layout}>
@@ -50,7 +55,7 @@ export default function DashboardLayout({ children }) {
         </div>
 
         <nav className={styles.sideNav}>
-          {NAV.map(item => (
+          {sidebarLinks.map(item => (
             <Link
               key={item.href}
               href={item.href}
