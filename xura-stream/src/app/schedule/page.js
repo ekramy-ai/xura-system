@@ -34,9 +34,16 @@ function ScheduleCard({ match }) {
 
       <div className={styles.footer}>
         <span className={styles.tournament}>{match.tournament || 'بطولة XURA'}</span>
-        <Link href={`/watch/${match.id}`} className={`btn ${isLive ? 'btn-primary' : 'btn-ghost'} btn-sm`}>
-          {isLive ? 'شاهد البث' : isFinished ? 'النتيجة' : 'التفاصيل'}
-        </Link>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link href={`/watch/${match.id}#results`} className="btn btn-ghost btn-sm" style={{ fontSize: 11 }}>
+            📊 النتائج
+          </Link>
+          {isLive && (
+            <Link href={`/watch/${match.id}`} className="btn btn-primary btn-sm" style={{ fontSize: 11 }}>
+              📺 البث
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   )

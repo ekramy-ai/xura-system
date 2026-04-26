@@ -29,11 +29,12 @@ export const translations = {
     'common.checkSchedule': 'شاهد الجدول لمعرفة المباريات القادمة',
     'common.recentResults': 'آخر النتائج',
     'match.status.live': 'مباشر',
-    'match.status.finished': 'انتهت',
+    'match.status.finished': 'منتهية',
     'match.status.upcoming': 'قادمة',
-    'match.btn.watch': '▶ شاهد الآن',
-    'match.btn.replay': '⟳ إعادة المشاهدة',
-    'match.btn.remind': '🔔 تذكير',
+    'match.btn.watch': 'مشاهدة البث',
+    'match.btn.results': 'متابعة النتائج',
+    'match.btn.replay': 'إعادة المشاهدة',
+    'match.btn.remind': 'التفاصيل',
     'match.set': 'ش',
 
     // Paywall
@@ -102,9 +103,10 @@ export const translations = {
     'match.status.live': 'Live',
     'match.status.finished': 'Finished',
     'match.status.upcoming': 'Upcoming',
-    'match.btn.watch': '▶ Watch Now',
+    'match.btn.watch': 'Watch Live',
+    'match.btn.results': 'Live Results',
     'match.btn.replay': '⟳ Watch Replay',
-    'match.btn.remind': '🔔 Remind Me',
+    'match.btn.remind': 'Details',
     'match.set': 'S',
 
     // Paywall

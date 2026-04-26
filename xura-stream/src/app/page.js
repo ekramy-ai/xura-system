@@ -61,13 +61,23 @@ function MatchCard({ match, isLive }) {
         </div>
       </div>
 
-      <div className={styles.cardFooter}>
-        <span className={styles.watchBtn}>
-          {isLive ? t('match.btn.watch') : match.status === 'finished' ? t('match.btn.replay') : t('match.btn.remind')}
-        </span>
-        {isLive && <span className={styles.liveIndicator}>🔴 Live</span>}
+      <div className={styles.cardFooter} onClick={e => e.stopPropagation()}>
+        {isLive ? (
+          <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+            <Link href={`/watch/${match.id}#results`} className="btn btn-ghost btn-sm" style={{ flex: 1, fontSize: 11 }}>
+              📊 {t('match.btn.results')}
+            </Link>
+            <Link href={`/watch/${match.id}`} className="btn btn-primary btn-sm" style={{ flex: 1, fontSize: 11 }}>
+              📺 {t('match.btn.watch')}
+            </Link>
+          </div>
+        ) : (
+          <Link href={`/watch/${match.id}`} className={styles.watchBtn} style={{ width: '100%', textAlign: 'center' }}>
+            {match.status === 'finished' ? t('match.btn.replay') : t('match.btn.remind')}
+          </Link>
+        )}
       </div>
-    </Link>
+    </div>
   )
 }
 
