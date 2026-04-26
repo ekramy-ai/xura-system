@@ -17,7 +17,7 @@ const REF_NAV = [
 ]
 
 export default function DashboardLayout({ children }) {
-  const { user, isAdmin, loading } = useAuth()
+  const { user, isAdmin, isReferee, loading } = useAuth()
   const router   = useRouter()
   const pathname = usePathname()
 
