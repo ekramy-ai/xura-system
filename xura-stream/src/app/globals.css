@@ -196,6 +196,7 @@ button { cursor: pointer; font-family: inherit }
 }
 .form-control::placeholder { color: var(--text3) }
 select.form-control { cursor: pointer }
+select option { background: var(--bg2); color: var(--text); }
 textarea.form-control { resize: vertical; min-height: 80px }
 
 /* ─────────────────────────────────────
