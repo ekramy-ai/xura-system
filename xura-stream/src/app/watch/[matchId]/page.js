@@ -62,14 +62,21 @@ function VideoPlayer({ match, profile }) {
         <div className={styles.noStream} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r2)' }}>
           <div className={styles.noStreamIcon}>🔒</div>
           <div className={styles.noStreamText} style={{ color: 'var(--amber)' }}>
-            {t('paywall.title')}
+            {match?.isPremium ? t('paywall.title') : 'البث يتطلب تسجيل الدخول'}
           </div>
           <p className={styles.noStreamSub} style={{ maxWidth: 400, margin: '12px auto' }}>
-            {t('paywall.desc')}
+            {match?.isPremium ? t('paywall.desc') : 'يجب عليك تسجيل الدخول أو الاشتراك لمشاهدة البث المباشر لهذه المباراة.'}
           </p>
-          <Link href="/subscribe" className="btn btn-primary" style={{ marginTop: 16 }}>
-            {t('paywall.upgrade')}
-          </Link>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16 }}>
+            <Link href="/subscribe" className="btn btn-primary">
+              {match?.isPremium ? t('paywall.upgrade') : 'اشترك الآن'}
+            </Link>
+            {!profile && (
+              <Link href="/login" className="btn btn-ghost">
+                {t('nav.login')}
+              </Link>
+            )}
+          </div>
         </div>
       )
     }
@@ -221,8 +228,7 @@ export default function WatchPage() {
   }
 
   return (
-    <AuthGuard>
-      <div className={styles.page}>
+    <div className={styles.page}>
         <div className={styles.watchLayout}>
 
           {/* ── Main Column ── */}
@@ -311,6 +317,5 @@ export default function WatchPage() {
 
         </div>
       </div>
-    </AuthGuard>
   )
 }
